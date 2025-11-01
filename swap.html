@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swap - Debear Party</title>
+    <script src="js/libs/ethers-5.7.2.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #00c4ef 0%, #e900e9 100%);
+            --secondary-gradient: linear-gradient(135deg, #4dd0e1 0%, #d91e5a 100%);
+            --neon-cyan: #00c4ef;
+            --neon-pink: #e900e9;
+            --neon-magenta: #d91e5a;
+            --dark-bg: #0a0e1a;
+            --dark-surface: #1a0a2e;
+            --dark-purple: #2d1b4e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0b1d4;
+            --grid-color: rgba(0, 196, 239, 0.12);
+            
+            /* z-index 层级系统 */
+            --z-background: -1;
+            --z-content: 1;
+            --z-navbar: 100;
+            --z-mobile-menu-overlay: 110;
+            --z-mobile-menu: 120;
+            --z-hamburger: 130;
+            --z-toast: 200;
+            --z-modal: 300;
+            
+            /* 间距系统 */
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 24px;
+            --spacing-lg: 32px;
+            --spacing-xl: 40px;
+            --spacing-2xl: 48px;
+            --spacing-3xl: 64px;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* 网格背景 */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: var(--z-background);
+            background: 
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                radial-gradient(ellipse at top, #2d1b4e 0%, #1a0a2e 50%, #0a0e1a 100%);
+            background-size: 50px 50px, 50px 50px, 100% 100%;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: var(--z-navbar);
+            padding: var(--spacing-md) 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 14, 26, 0.4);
+            backdrop-filter: blur(20px);
+            border-bottom: 2px solid rgba(0, 212, 255, 0.2);
+            transition: all 0.3s;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: var(--spacing-xl);
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 8px rgba(0, 196, 239, 0.6);
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+            box-shadow: 0 0 6px rgba(0, 196, 239, 0.5);
+            transition: width 0.3s;
+        }
+
+        .nav-menu a:hover::after,
+        .nav-menu a.active::after {
+            width: 100%;
+        }
+
+        .nav-back {
+            padding: 10px 25px;
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 20px;
+            color: var(--neon-cyan);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-back:hover {
+            background: var(--neon-cyan);
+            color: white;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .connect-btn {
+            padding: 12px 30px;
+            background: var(--primary-gradient);
+            border: 2px solid transparent;
+            border-radius: 25px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.7);
+        }
+
+        /* 汉堡菜单 */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 10px;
+            z-index: var(--z-hamburger);
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        .mobile-back {
+            display: none;
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 10px;
+            color: var(--neon-cyan);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-back:hover {
+            background: var(--neon-cyan);
+            color: white;
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            height: 100vh;
+            background: rgba(10, 14, 26, 0.98);
+            backdrop-filter: blur(20px);
+            border-left: 2px solid rgba(0, 196, 239, 0.3);
+            box-shadow: -4px 0 30px rgba(0, 196, 239, 0.2);
+            padding: 80px 30px 30px;
+            transition: right 0.4s ease;
+            z-index: var(--z-mobile-menu);
+            overflow-y: auto;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: var(--z-mobile-menu-overlay);
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-nav-links {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .mobile-nav-links li {
+            margin: 20px 0;
+        }
+
+        .mobile-nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 600;
+            display: block;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .mobile-nav-links a:hover {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+            padding-left: 10px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* 语言切换器 */
+        .lang-switcher {
+            position: relative;
+            margin-right: var(--spacing-sm);
+        }
+        
+        .lang-btn {
+            padding: 8px 16px;
+            background: rgba(0, 196, 239, 0.1);
+            border: 2px solid rgba(0, 196, 239, 0.3);
+            border-radius: 20px;
+            color: var(--neon-cyan);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            min-width: 50px;
+        }
+        
+        .lang-btn:hover {
+            background: rgba(0, 196, 239, 0.2);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 12px rgba(0, 196, 239, 0.4);
+        }
+        
+        .lang-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 196, 239, 0.3);
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 140px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 1000;
+            box-shadow: 0 8px 24px rgba(0, 196, 239, 0.2);
+        }
+        
+        .lang-switcher:hover .lang-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .lang-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            color: white;
+        }
+        
+        .lang-option:hover {
+            background: rgba(0, 196, 239, 0.15);
+        }
+        
+        .lang-option.active {
+            background: rgba(0, 196, 239, 0.1);
+            color: var(--neon-cyan);
+        }
+
+        .mobile-connect-btn {
+            display: none;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* 主内容区 */
+        .container {
+            max-width: 1400px;
+            margin: 120px auto 50px;
+            padding: 0 5%;
+        }
+        
+        .swap-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            grid-auto-rows: 1fr;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title h1 {
+            font-size: 56px;
+            font-weight: 900;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.5));
+        }
+
+        .page-title p {
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        /* Swap 卡片 */
+        .swap-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(255, 0, 255, 0.08) 100%);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 25px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .swap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .swap-title {
+            font-size: 24px;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .settings-btn {
+            background: transparent;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            color: var(--neon-cyan);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-btn:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--neon-cyan);
+        }
+
+        /* Token 输入 */
+        .token-input-container {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 10px;
+        }
+
+        .token-input-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .input-label {
+            color: var(--text-secondary);
+        }
+
+        .balance-info {
+            color: var(--text-secondary);
+        }
+
+        .token-input {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .amount-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            outline: none;
+            min-width: 0;
+            max-width: 60%;
+        }
+
+        .amount-input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 移除数字输入框的增减按钮 */
+        .amount-input::-webkit-outer-spin-button,
+        .amount-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .amount-input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .token-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 20px;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-shrink: 0;
+            min-width: 120px;
+        }
+
+        .token-selector:hover {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: var(--neon-cyan);
+        }
+
+        .token-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .token-symbol {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .token-actions {
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        .max-btn {
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 8px;
+            padding: 6px 16px;
+            color: white;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .max-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+        }
+
+        /* Swap 箭头 */
+        .swap-arrow-container {
+            display: flex;
+            justify-content: center;
+            margin: -5px 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .swap-arrow-btn {
+            background: var(--dark-bg);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            color: var(--neon-cyan);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .swap-arrow-btn:hover {
+            transform: rotate(180deg);
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
+        }
+
+        /* Swap 详情 */
+        .swap-details {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+        }
+
+        .detail-value {
+            color: white;
+            font-weight: 600;
+        }
+
+        .impact-low {
+            color: #00ff88;
+        }
+
+        .impact-medium {
+            color: #ffaa00;
+        }
+
+        .impact-high {
+            color: #ff0064;
+        }
+
+        /* Swap 按钮 */
+        .swap-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--primary-gradient);
+            border: 2px solid transparent;
+            border-radius: 15px;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4);
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .swap-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 212, 255, 0.6);
+        }
+
+        .swap-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-loading {
+            display: none;
+        }
+
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 消息提示 */
+        #message {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9998;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert.info {
+            background: rgba(0, 212, 255, 0.15);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            color: var(--neon-cyan);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .alert.success {
+            background: rgba(0, 255, 136, 0.15);
+            border: 2px solid rgba(0, 255, 136, 0.5);
+            color: #00ff88;
+            box-shadow: 0 8px 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .alert.error {
+            background: rgba(255, 0, 100, 0.15);
+            border: 2px solid rgba(255, 0, 100, 0.5);
+            color: #ff0064;
+            box-shadow: 0 8px 30px rgba(255, 0, 100, 0.3);
+        }
+
+        /* Token 选择弹窗 */
+        .token-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s;
+        }
+
+        .token-modal-overlay.active {
+            display: flex;
+        }
+
+        .token-modal {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(255, 0, 255, 0.1) 100%);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            border-radius: 25px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.3);
+        }
+
+        .token-modal h3 {
+            font-size: 24px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .token-list {
+            list-style: none;
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .token-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .token-list::-webkit-scrollbar-track {
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 3px;
+        }
+        
+        .token-list::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.3);
+            border-radius: 3px;
+        }
+        
+        .token-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 212, 255, 0.5);
+        }
+
+        .token-item {
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.05);
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            border-radius: 12px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .token-item:hover {
+            background: rgba(0, 212, 255, 0.15);
+            border-color: var(--neon-cyan);
+            transform: translateX(5px);
+        }
+
+        .token-item-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .token-item-symbol {
+            font-weight: 700;
+            font-size: 16px;
+            color: white;
+        }
+
+        .token-item-name {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .token-item-balance {
+            font-weight: 600;
+            color: var(--neon-cyan);
+        }
+
+        .custom-token-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .custom-token-section h4 {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .custom-token-input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0, 212, 255, 0.05);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            font-family: monospace;
+            transition: all 0.3s;
+        }
+
+        .custom-token-input:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .custom-token-input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        .add-custom-token-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px;
+            background: var(--primary-gradient);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .add-custom-token-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .add-custom-token-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 价格图表卡片 */
+        .price-chart-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(255, 0, 255, 0.08) 100%);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 25px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        
+        .chart-header {
+            margin-bottom: 25px;
+        }
+        
+        .chart-title {
+            font-size: 24px;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+        
+        .price-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .price-stat {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+        
+        .price-stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .price-stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .price-change-positive {
+            color: #00ff88 !important;
+        }
+        
+        .price-change-negative {
+            color: #ff0064 !important;
+        }
+        
+        .chart-container {
+            position: relative;
+            flex: 1 1 auto;
+            min-height: 300px;
+            max-height: 500px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+        }
+        
+        .chart-error {
+            display: none;
+            text-align: center;
+            color: #ff0064;
+            padding: 20px;
+        }
+        
+        .chart-footer {
+            text-align: center;
+            margin-top: 12px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .swap-layout {
+                grid-template-columns: 1fr;
+                grid-auto-rows: auto;
+            }
+            
+            .price-chart-card {
+                margin-bottom: 30px;
+            }
+            
+            .swap-card {
+                min-height: auto;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .page-title h1 { font-size: 36px; }
+            .nav-menu { display: none; }
+            .lang-switcher { display: none; }
+            .navbar .connect-btn { display: none; }
+            .hamburger { display: flex; }
+            .mobile-connect-btn { display: block; }
+            .amount-input { font-size: 24px; }
+            
+            .price-info {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .chart-container {
+                min-height: 250px;
+                max-height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <a href="index.html" class="logo">🐻 Debear Party</a>
+        <ul class="nav-menu">
+            <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+            <li><a href="swap.html" class="active" data-i18n="nav.swap">Swap</a></li>
+            <li><a href="pass-nft.html" data-i18n="nav.pass">Pass NFT</a></li>
+            <li><a href="t-engine.html" data-i18n="nav.tengine">T-Engine</a></li>
+            <li><a href="gamefi.html" data-i18n="nav.gamefi">GameFi</a></li>
+        </ul>
+        <div class="nav-buttons">
+            <!-- 语言切换器 -->
+            <div class="lang-switcher">
+                <button class="lang-btn">EN</button>
+                <div class="lang-dropdown">
+                    <div class="lang-option active" data-lang="en" onclick="window.i18n?.setLanguage('en')">
+                        <span data-i18n="lang.en">English</span>
+                    </div>
+                    <div class="lang-option" data-lang="zh-TW" onclick="window.i18n?.setLanguage('zh-TW')">
+                        <span data-i18n="lang.zh">繁體中文</span>
+                    </div>
+                </div>
+            </div>
+            <button class="connect-btn" id="connectBtn" onclick="connectWallet()" data-i18n="nav.connect">Connect Wallet</button>
+            <button class="hamburger" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 消息提示 -->
+    <div id="message"></div>
+
+    <!-- 移动端菜单遮罩 -->
+    <div class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- 移动端侧边栏菜单 -->
+    <div class="mobile-menu">
+        <ul class="mobile-nav-links">
+            <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+            <li><a href="swap.html" class="active" data-i18n="nav.swap">Swap</a></li>
+            <li><a href="pass-nft.html" data-i18n="nav.pass">Pass NFT</a></li>
+            <li><a href="t-engine.html" data-i18n="nav.tengine">T-Engine</a></li>
+            <li><a href="gamefi.html" data-i18n="nav.gamefi">GameFi</a></li>
+        </ul>
+        <!-- 移动端语言选择 -->
+        <div style="margin-top: 20px; padding: 10px 0; border-top: 1px solid rgba(0, 212, 255, 0.2);">
+            <div class="lang-option" style="padding: 12px; cursor: pointer;" data-lang="en" onclick="window.i18n?.setLanguage('en')">
+                <span data-i18n="lang.en">English</span>
+            </div>
+            <div class="lang-option" style="padding: 12px; cursor: pointer;" data-lang="zh-TW" onclick="window.i18n?.setLanguage('zh-TW')">
+                <span data-i18n="lang.zh">繁體中文</span>
+            </div>
+        </div>
+        <button class="connect-btn mobile-connect-btn" id="mobileConnectBtn" onclick="connectWallet()" data-i18n="nav.connect">Connect Wallet</button>
+    </div>
+
+    <!-- Token 选择弹窗 -->
+    <div class="token-modal-overlay" id="tokenModal">
+        <div class="token-modal">
+            <h3>Select Token</h3>
+            
+            <!-- Custom token input (only visible in To mode) -->
+            <div class="custom-token-section" id="customTokenSection" style="display: none;">
+                <h4>🔍 Enter Custom Token Address</h4>
+                <input 
+                    type="text" 
+                    class="custom-token-input" 
+                    id="customTokenInput" 
+                    placeholder="0x..."
+                    maxlength="42"
+                >
+                <button class="add-custom-token-btn" id="addCustomTokenBtn" onclick="swapManager.addCustomToken()">
+                    Add Token
+                </button>
+            </div>
+            
+            <ul class="token-list" id="tokenList">
+                <!-- Token items will be inserted here -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- 主内容 -->
+    <div class="container">
+        <div class="page-title">
+            <h1>💱 Swap</h1>
+        </div>
+
+        <div class="swap-layout">
+            <!-- DP 价格图表 -->
+            <div class="price-chart-card">
+            <div class="chart-header">
+                <h2 class="chart-title">🐻 DP Token Price</h2>
+            </div>
+            
+            <div class="price-info">
+                <div class="price-stat">
+                    <div class="price-stat-label">Current Price</div>
+                    <div class="price-stat-value" id="dpCurrentPrice">$0.0000</div>
+                </div>
+                <div class="price-stat">
+                    <div class="price-stat-label">24h Change</div>
+                    <div class="price-stat-value" id="dpPriceChange24h">0.00%</div>
+                </div>
+                <div class="price-stat">
+                    <div class="price-stat-label">Market Cap</div>
+                    <div class="price-stat-value" id="dpMarketCap">$0</div>
+                </div>
+                <div class="price-stat">
+                    <div class="price-stat-label">24h Volume</div>
+                    <div class="price-stat-value" id="dpVolume24h">$0</div>
+                </div>
+                <div class="price-stat">
+                    <div class="price-stat-label">TVL</div>
+                    <div class="price-stat-value" id="dpTVL">$0</div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="dpPriceChart"></canvas>
+                <div class="chart-error" id="chartError"></div>
+            </div>
+            
+            <div class="chart-footer">
+                <span id="dpLastUpdate">Updated: --:--</span> | Powered by <strong>Ave</strong>
+            </div>
+        </div>
+
+        <!-- Swap 卡片 -->
+        <div class="swap-card">
+            <div class="swap-header">
+                <h2 class="swap-title">Swap Tokens</h2>
+                <button class="settings-btn" id="swapSettings" title="设置">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- From Token -->
+            <div class="token-input-container">
+                <div class="token-input-header">
+                    <span class="input-label">From</span>
+                    <span class="balance-info">Balance: <span id="fromBalance">0.00</span></span>
+                </div>
+                <div class="token-input">
+                    <input type="number" class="amount-input" id="fromAmount" placeholder="0.0" step="any">
+                    <div class="token-selector" id="fromTokenSelector">
+                        <div class="token-info">
+                            <span class="token-symbol" id="fromTokenSymbol">BERA</span>
+                        </div>
+                        <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="token-actions">
+                    <button class="max-btn" id="maxFromAmount">MAX</button>
+                </div>
+            </div>
+
+            <!-- Swap Arrow -->
+            <div class="swap-arrow-container">
+                <button class="swap-arrow-btn" id="swapDirection">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- To Token -->
+            <div class="token-input-container">
+                <div class="token-input-header">
+                    <span class="input-label">To</span>
+                    <span class="balance-info">Balance: <span id="toBalance">0.00</span></span>
+                </div>
+                <div class="token-input">
+                    <input type="number" class="amount-input" id="toAmount" placeholder="0.0" step="any" readonly>
+                    <div class="token-selector" id="toTokenSelector">
+                        <div class="token-info">
+                            <span class="token-symbol" id="toTokenSymbol">DP</span>
+                        </div>
+                        <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Swap Details -->
+            <div class="swap-details" id="swapDetails" style="display: none;">
+                <div class="detail-row">
+                    <span class="detail-label">Rate</span>
+                    <span class="detail-value" id="swapRate">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Price Impact</span>
+                    <span class="detail-value impact-low" id="priceImpact">< 0.01%</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Network Fee</span>
+                    <span class="detail-value" id="networkFee">~$0.00</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Minimum Received</span>
+                    <span class="detail-value" id="minimumReceived">0.00</span>
+                </div>
+            </div>
+
+            <!-- Swap Button -->
+            <button class="swap-btn" id="swapBtn" disabled>
+                <span class="btn-text">Enter Amount</span>
+            </button>
+
+            <!-- Powered by -->
+            <div style="text-align: center; margin-top: 12px; color: var(--text-secondary); font-size: 12px; opacity: 0.8;">
+                Powered by <strong>kodiak kX</strong>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/libs/particles.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- 国际化配置 -->
+    <script src="js/i18n.js"></script>
+    
+    <!-- 公共脚本 -->
+    <script src="js/common.js"></script>
+    
+    <!-- Ave API & Price Chart -->
+    <script src="ave-api.js?v=3"></script>
+    <script src="price-chart.js?v=3"></script>
+    
+    <script src="kodiak-api.js"></script>
+    <script src="swap.js"></script>
+    
+    <script>
+        // 粒子背景
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 100, density: { enable: true, value_area: 800 } },
+                color: { value: ['#00d4ff', '#ff00ff'] },
+                shape: { type: 'circle' },
+                opacity: { value: 0.6, random: true },
+                size: { value: 3, random: true },
+                line_linked: { enable: true, distance: 150, color: '#00d4ff', opacity: 0.3, width: 1 },
+                move: { enable: true, speed: 1.5, direction: 'none', random: true }
+            }
+        });
+
+        // 移动端菜单切换
+        function toggleMobileMenu() {
+            const hamburger = document.querySelector('.hamburger');
+            const mobileMenu = document.querySelector('.mobile-menu');
+            const overlay = document.querySelector('.mobile-menu-overlay');
+            
+            hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            if (mobileMenu.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+        
+        // 初始化 DP 价格图表
+        let dpPriceChart;
+        window.addEventListener('load', () => {
+            // 创建 Ave API 实例
+            const aveAPI = new AveAPI('7h7NW15y2nApmvp4iyKZ6Ql6HSCPe3irICJKtMK0vKbbYDvohfsyTgwZ55t2QfNL');
+            
+            // 创建价格图表实例
+            dpPriceChart = new DPPriceChart('dpPriceChart', aveAPI);
+        });
+    </script>
+</body>
+</html>

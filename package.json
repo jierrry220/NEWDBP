@@ -1,0 +1,21 @@
+{
+  "name": "debear-party",
+  "version": "1.0.0",
+  "description": "Debear Party - Web3 潮流元宇宙游戏平台",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "berachain",
+    "defi",
+    "nft",
+    "web3"
+  ],
+  "author": "",
+  "license": "MIT"
+}

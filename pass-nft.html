@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pass NFT - Debear Party</title>
+    <script src="js/libs/ethers-5.7.2.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* 优化颜色系统 */
+            --primary-gradient: linear-gradient(135deg, #00c4ef 0%, #e900e9 100%);
+            --neon-cyan: #00c4ef;
+            --neon-pink: #e900e9;
+            --dark-bg: #0a0e1a;
+            --dark-surface: #1a0a2e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0b1d4;
+            --grid-color: rgba(0, 196, 239, 0.12);
+            
+            /* z-index 层级 */
+            --z-background: -1;
+            --z-navbar: 100;
+            --z-mobile-menu-overlay: 110;
+            --z-mobile-menu: 120;
+            --z-hamburger: 130;
+            --z-toast: 200;
+            --z-modal: 300;
+            
+            /* 间距系统 */
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 24px;
+            --spacing-lg: 32px;
+            --spacing-xl: 40px;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* 网格背景 */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background: 
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                radial-gradient(ellipse at top, #2d1b4e 0%, #1a0a2e 50%, #0a0e1a 100%);
+            background-size: 50px 50px, 50px 50px, 100% 100%;
+        }
+
+        /* ========== 导航栏 (优化布局) ========== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: var(--z-navbar);
+            padding: var(--spacing-md) 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 14, 26, 0.5);
+            backdrop-filter: blur(20px);
+            border-bottom: 2px solid rgba(0, 196, 239, 0.2);
+            box-shadow: 0 4px 24px rgba(0, 196, 239, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            padding: var(--spacing-sm) 5%;
+            background: rgba(10, 14, 26, 0.75);
+            box-shadow: 0 4px 24px rgba(233, 0, 233, 0.12);
+            border-bottom: 2px solid rgba(233, 0, 233, 0.25);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            cursor: pointer;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: var(--spacing-xl);
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-menu a:hover {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 8px rgba(0, 196, 239, 0.6);
+        }
+
+        .nav-menu a:focus {
+            outline: 2px solid var(--neon-cyan);
+            outline-offset: 4px;
+            border-radius: 4px;
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+            box-shadow: 0 0 6px rgba(0, 196, 239, 0.5);
+            transition: width 0.3s;
+        }
+
+        .nav-menu a:hover::after {
+            width: 100%;
+        }
+
+        .connect-btn {
+            padding: 12px var(--spacing-lg);
+            background: var(--primary-gradient);
+            border: 2px solid transparent;
+            border-radius: 25px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(0, 196, 239, 0.4), 0 0 32px rgba(233, 0, 233, 0.25);
+        }
+
+        .connect-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(0, 196, 239, 0.6), 0 0 40px rgba(233, 0, 233, 0.4);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .connect-btn:focus {
+            outline: 2px solid var(--neon-cyan);
+            outline-offset: 2px;
+        }
+
+        .connect-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ========== 语言切换器 ========== */
+        .lang-switcher {
+            position: relative;
+            margin-right: var(--spacing-sm);
+        }
+
+        .lang-btn {
+            padding: 8px 16px;
+            background: rgba(0, 196, 239, 0.1);
+            border: 2px solid rgba(0, 196, 239, 0.3);
+            border-radius: 20px;
+            color: var(--neon-cyan);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            min-width: 50px;
+        }
+
+        .lang-btn:hover {
+            background: rgba(0, 196, 239, 0.2);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 12px rgba(0, 196, 239, 0.4);
+        }
+
+        .lang-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 196, 239, 0.3);
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 140px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 1000;
+            box-shadow: 0 8px 24px rgba(0, 196, 239, 0.2);
+        }
+
+        .lang-switcher:hover .lang-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .lang-option {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .lang-option:hover {
+            background: rgba(0, 196, 239, 0.1);
+            color: var(--neon-cyan);
+        }
+
+        .lang-option.active {
+            background: rgba(0, 196, 239, 0.15);
+            color: var(--neon-cyan);
+            font-weight: 600;
+        }
+
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        /* ========== 汉堡菜单按钮 ========== */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: var(--spacing-xs);
+            z-index: var(--z-hamburger);
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        /* 返回按钮（移动端） */
+        .mobile-back {
+            display: none;
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 10px;
+            color: var(--neon-cyan);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-back:hover {
+            background: var(--neon-cyan);
+            color: white;
+        }
+
+        /* 移动端侧边栏菜单 */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            height: 100vh;
+            background: rgba(10, 14, 26, 0.98);
+            backdrop-filter: blur(20px);
+            border-left: 2px solid rgba(0, 212, 255, 0.3);
+            box-shadow: -4px 0 30px rgba(0, 212, 255, 0.2);
+            padding: 80px 30px 30px;
+            transition: right 0.4s ease;
+            z-index: 999;
+            overflow-y: auto;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 998;
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-nav-links {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .mobile-nav-links li {
+            margin: 20px 0;
+        }
+
+        .mobile-nav-links a,
+        .mobile-nav-links button {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 600;
+            display: block;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+            transition: all 0.3s;
+            background: none;
+            border: none;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .mobile-nav-links a:hover,
+        .mobile-nav-links a.active,
+        .mobile-nav-links button:hover {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+            padding-left: 10px;
+        }
+
+        .mobile-connect-btn {
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* 主内容区 */
+        .container {
+            max-width: 1400px;
+            margin: 120px auto 50px;
+            padding: 0 5%;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .page-title h1 {
+            font-size: 56px;
+            font-weight: 900;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.5));
+        }
+
+        .page-title p {
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        /* 选项卡 */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 50px;
+        }
+
+        .tab-btn {
+            padding: 15px 40px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 25px;
+            color: var(--text-secondary);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4);
+        }
+
+        .tab-btn:hover:not(.active) {
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+
+        /* 内容面板 */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Pass购买区域 */
+        .pass-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .pass-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(255, 0, 255, 0.12) 100%);
+            border: 2px solid rgba(0, 212, 255, 0.4);
+            border-radius: 25px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pass-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .pass-card:hover::after {
+            left: 100%;
+        }
+
+        .pass-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--neon-pink);
+            box-shadow: 0 20px 60px rgba(255, 0, 255, 0.4);
+        }
+
+        .pass-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            background: var(--primary-gradient);
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .pass-card h3 {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .pass-price {
+            font-size: 42px;
+            font-weight: 900;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 20px 0;
+        }
+
+        .pass-features {
+            list-style: none;
+            margin: 25px 0;
+            text-align: left;
+        }
+
+        .pass-features li {
+            padding: 10px 0;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .pass-features li:before {
+            content: '✓';
+            color: var(--neon-cyan);
+            font-weight: 900;
+            margin-right: 10px;
+        }
+
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary-gradient);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 212, 255, 0.6);
+        }
+
+        /* NFT橱窗展示 */
+        .nft-showcase {
+            max-width: 1000px;
+            margin: 0 auto 40px;
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(255, 0, 255, 0.08) 100%);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 25px;
+            display: none;
+        }
+
+        .nft-showcase.visible {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        .showcase-title {
+            font-size: 28px;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+            text-align: center;
+            filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.4));
+        }
+
+        .nft-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
+            gap: 25px;
+            justify-content: center;
+        }
+
+        .nft-item {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(255, 0, 255, 0.15) 100%);
+            border: 2px solid rgba(0, 212, 255, 0.4);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.4s;
+            position: relative;
+            overflow: visible;
+        }
+
+        .nft-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(255, 0, 255, 0.2) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+
+        .nft-item:hover::before {
+            opacity: 1;
+        }
+
+        .nft-item:hover {
+            transform: translateY(-10px) scale(1.05);
+            border-color: var(--neon-pink);
+            box-shadow: 0 20px 60px rgba(255, 0, 255, 0.5), 0 0 40px rgba(0, 212, 255, 0.3);
+        }
+
+        .nft-image {
+            width: 100%;
+            height: 320px;
+            object-fit: contain;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .nft-info {
+            position: relative;
+            z-index: 1;
+        }
+
+        .nft-count {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            z-index: 2;
+        }
+
+        .nft-send-btn {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            padding: 8px 18px;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+            z-index: 2;
+        }
+
+        .nft-send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.6);
+        }
+
+        /* NFT挖矿区域 */
+        .mining-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .mining-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(255, 0, 255, 0.08) 100%);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 25px;
+            padding: 40px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .mining-card h3 {
+            font-size: 24px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 25px;
+        }
+
+        .reward-box {
+            background: var(--primary-gradient);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        .reward-amount {
+            font-size: 48px;
+            font-weight: 900;
+            margin: 10px 0;
+        }
+
+        .reward-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .stat:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: white;
+        }
+
+        /* 消息提示框 */
+        #message {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9998;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert.info {
+            background: rgba(0, 212, 255, 0.15);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            color: var(--neon-cyan);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .alert.success {
+            background: rgba(0, 255, 136, 0.15);
+            border: 2px solid rgba(0, 255, 136, 0.5);
+            color: #00ff88;
+            box-shadow: 0 8px 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .alert.error {
+            background: rgba(255, 0, 100, 0.15);
+            border: 2px solid rgba(255, 0, 100, 0.5);
+            color: #ff0064;
+            box-shadow: 0 8px 30px rgba(255, 0, 100, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+
+        .btn-secondary:hover {
+            background: var(--neon-cyan);
+            color: white;
+        }
+
+        /* 初始化按钮覆盖 */
+        .init-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            gap: 20px;
+        }
+
+        .init-overlay.hidden {
+            display: none;
+        }
+
+        .init-overlay h4 {
+            font-size: 24px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .init-overlay p {
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        /* 邀请人弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(255, 0, 255, 0.1) 100%);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.3);
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal h3 {
+            font-size: 28px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal p {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.05);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-btn-primary {
+            background: var(--primary-gradient);
+            border: 2px solid transparent;
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.5);
+        }
+
+        .modal-btn-secondary {
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+
+        .modal-btn-secondary:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        /* 发送NFT弹窗 */
+        .send-modal-content {
+            padding: 30px;
+        }
+
+        .send-modal-content .modal-input {
+            margin-bottom: 15px;
+        }
+
+        .send-info {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .send-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            color: var(--text-secondary);
+        }
+
+        .send-info-item span:last-child {
+            color: white;
+            font-weight: 600;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .page-title h1 { font-size: 36px; }
+            .tabs { flex-direction: column; }
+            .tab-btn { width: 100%; }
+            .pass-grid { grid-template-columns: 1fr; }
+            .nft-grid { grid-template-columns: 1fr; }
+            .nft-image { height: 280px; }
+            .nav-menu { display: none; }
+            .lang-switcher { display: none; }
+            .hamburger { display: flex; }
+            .navbar .connect-btn { display: none; }
+            .mobile-connect-btn { display: block; }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <a href="index.html" class="logo">🐻 Debear Party</a>
+        <ul class="nav-menu">
+            <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+            <li><a href="swap.html" data-i18n="nav.swap">Swap</a></li>
+            <li><a href="pass-nft.html" class="active" data-i18n="nav.pass">Pass NFT</a></li>
+            <li><a href="t-engine.html" data-i18n="nav.tengine">T-Engine</a></li>
+            <li><a href="gamefi.html" data-i18n="nav.gamefi">GameFi</a></li>
+        </ul>
+        <div class="nav-buttons">
+            <!-- 语言切换器 -->
+            <div class="lang-switcher">
+                <button class="lang-btn">EN</button>
+                <div class="lang-dropdown">
+                    <div class="lang-option active" data-lang="en" onclick="window.i18n?.setLanguage('en')">
+                        <span data-i18n="lang.en">English</span>
+                    </div>
+                    <div class="lang-option" data-lang="zh-TW" onclick="window.i18n?.setLanguage('zh-TW')">
+                        <span data-i18n="lang.zh">繁體中文</span>
+                    </div>
+                </div>
+            </div>
+            <button class="connect-btn" id="connectBtn" onclick="connectWallet()" data-i18n="nav.connect">Connect Wallet</button>
+            <button class="hamburger" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 消息提示框 -->
+    <div id="message"></div>
+
+    <!-- 移动端菜单遮罩 -->
+    <div class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- 移动端侧边栏菜单 -->
+    <div class="mobile-menu">
+        <ul class="mobile-nav-links">
+            <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+            <li><a href="swap.html" data-i18n="nav.swap">Swap</a></li>
+            <li><a href="pass-nft.html" class="active" data-i18n="nav.pass">Pass NFT</a></li>
+            <li><a href="t-engine.html" data-i18n="nav.tengine">T-Engine</a></li>
+            <li><a href="gamefi.html" data-i18n="nav.gamefi">GameFi</a></li>
+        </ul>
+        <!-- 移动端语言选择 -->
+        <div style="margin-top: 20px; padding: 10px 0; border-top: 1px solid rgba(0, 212, 255, 0.2);">
+            <div class="lang-option" style="padding: 12px; cursor: pointer;" data-lang="en" onclick="window.i18n?.setLanguage('en')">
+                <span data-i18n="lang.en">English</span>
+            </div>
+            <div class="lang-option" style="padding: 12px; cursor: pointer;" data-lang="zh-TW" onclick="window.i18n?.setLanguage('zh-TW')">
+                <span data-i18n="lang.zh">繁體中文</span>
+            </div>
+        </div>
+        <button class="connect-btn mobile-connect-btn" onclick="connectWallet()" data-i18n="nav.connect">Connect Wallet</button>
+    </div>
+
+    <!-- 邀请人弹窗 -->
+    <div class="modal-overlay" id="inviteModal">
+        <div class="modal">
+            <h3 data-i18n="pass.inviteTitle">🎁 Enter Referrer Address</h3>
+            <p data-i18n="pass.inviteDesc">You are detected as a new user. Please enter referrer address to get rewards, or skip to use default referrer.</p>
+            <input type="text" class="modal-input" id="modalInviterInput" placeholder="0x... (选填)">
+            <div class="modal-buttons">
+                <button class="modal-btn-secondary" onclick="closeInviteModal(true)" data-i18n="pass.skip">Skip</button>
+                <button class="modal-btn-primary" onclick="confirmInviter()" data-i18n="pass.confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发送NFT弹窗 -->
+    <div class="modal-overlay" id="sendModal">
+        <div class="modal">
+            <div class="send-modal-content">
+                <h3 data-i18n="pass.sendNFT">📤 Send Pass NFT</h3>
+                <div class="send-info">
+                    <div class="send-info-item">
+                        <span data-i18n="pass.passType">Pass Type:</span>
+                        <span id="sendPassType">--</span>
+                    </div>
+                    <div class="send-info-item">
+                        <span data-i18n="pass.available">Available:</span>
+                        <span id="sendPassAvailable">--</span>
+                    </div>
+                </div>
+                <input type="text" class="modal-input" id="sendToAddress" data-i18n-attr="placeholder" data-i18n="pass.recipientAddress" placeholder="Enter recipient address (0x...)">
+                <input type="number" class="modal-input" id="sendAmount" data-i18n-attr="placeholder" data-i18n="pass.sendAmount" placeholder="Enter send amount" min="1" value="1">
+                <div class="modal-buttons">
+                    <button class="modal-btn-secondary" onclick="closeSendModal()" data-i18n="pass.cancel">Cancel</button>
+                    <button class="modal-btn-primary" onclick="confirmSend()" data-i18n="pass.send">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容 -->
+    <div class="container">
+        <div class="page-title">
+            <h1 data-i18n="pass.title">🎫 Pass NFT</h1>
+            <p data-i18n="pass.subtitle">Purchase Exclusive Pass to Start Your Debear Party Journey</p>
+        </div>
+
+        <!-- 选项卡 -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('buy')" data-i18n="pass.buyTab">Buy Pass NFT</button>
+            <button class="tab-btn" onclick="switchTab('mining')" data-i18n="pass.miningTab">NFT Mining</button>
+        </div>
+
+        <!-- 购买Pass -->
+        <div id="tab-buy" class="tab-content active">
+            <div class="pass-grid">
+                <!-- Standard Pass -->
+                <div class="pass-card">
+                    <img src="pass-picture/Standard.jpg" alt="Standard Pass" style="width: 100%; height: auto; border-radius: 15px; margin: 20px 0 15px 0; box-shadow: 0 8px 30px rgba(0, 212, 255, 0.3);">
+                    <div class="pass-price" id="priceStd" style="margin-bottom: 20px;">-- BERA</div>
+                    <button class="btn-primary" onclick="buyPass(1)" data-i18n="pass.buyNow">Buy Now</button>
+                </div>
+
+                <!-- Premium Pass -->
+                <div class="pass-card">
+                    <img src="pass-picture/Premium.jpg" alt="Premium Pass" style="width: 100%; height: auto; border-radius: 15px; margin: 20px 0 15px 0; box-shadow: 0 8px 30px rgba(0, 212, 255, 0.3);">
+                    <div class="pass-price" id="pricePre" style="margin-bottom: 20px;">-- BERA</div>
+                    <button class="btn-primary" onclick="buyPass(2)" data-i18n="pass.buyNow">Buy Now</button>
+                </div>
+
+                <!-- Exclusive Pass -->
+                <div class="pass-card">
+                    <img src="pass-picture/Exclusive.jpg" alt="Exclusive Pass" style="width: 100%; height: auto; border-radius: 15px; margin: 20px 0 15px 0; box-shadow: 0 8px 30px rgba(0, 212, 255, 0.3);">
+                    <div class="pass-price" id="priceEx" style="margin-bottom: 20px;">-- BERA</div>
+                    <button class="btn-primary" onclick="buyPass(3)" data-i18n="pass.buyNow">Buy Now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NFT挖矿 -->
+        <div id="tab-mining" class="tab-content">
+            <!-- NFT橱窗展示 -->
+            <div class="nft-showcase" id="nftShowcase">
+                <h2 class="showcase-title" data-i18n="pass.myCollection">🎨 My Pass NFT Collection</h2>
+                <div class="nft-grid" id="nftGrid">
+                    <!-- 动态生成NFT卡片 -->
+                </div>
+            </div>
+
+            <div class="mining-container">
+                <div class="mining-card">
+                    <!-- 初始化覆盖层 -->
+                    <div class="init-overlay" id="initOverlay">
+                        <h4 data-i18n="pass.initMining">✨ Start NFT Mining</h4>
+                        <p data-i18n="pass.initDescription">You need to initialize the mining system first to start earning DP Token rewards</p>
+                        <button class="btn-primary" onclick="initNFTMining()" style="width: 200px;" data-i18n="pass.initialize">Initialize</button>
+                    </div>
+                    
+                    <h3 data-i18n="pass.nftMining">🎨 NFT Pass Mining</h3>
+                    <div class="alert info" data-i18n="pass.autoMining">
+                        Holding Pass automatically mines, no staking needed! Daily output calculated automatically based on Pass level.
+                    </div>
+                    
+                    <div class="reward-box">
+                        <div class="reward-label" data-i18n="pass.claimableReward">Claimable Reward</div>
+                        <div class="reward-amount" id="nftReward">0.0000</div>
+                        <div class="reward-label">DP Token</div>
+                    </div>
+                    
+                    <button class="btn-primary btn-secondary" onclick="claimNFTReward()" data-i18n="pass.claimReward">Claim Reward</button>
+                    
+                    <div style="margin-top: 30px;">
+                        <div class="stat">
+                            <span class="stat-label" data-i18n="pass.standardPass">Standard Pass:</span>
+                            <span class="stat-value" id="stdCount">0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label" data-i18n="pass.premiumPass">Premium Pass:</span>
+                            <span class="stat-value" id="preCount">0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label" data-i18n="pass.exclusivePass">Exclusive Pass:</span>
+                            <span class="stat-value" id="exCount">0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label" data-i18n="pass.dailyOutput">Daily Output:</span>
+                            <span class="stat-value" id="dailyReward">0 DP/天</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label" data-i18n="tengine.totalClaimed">Total Claimed:</span>
+                            <span class="stat-value" id="totalClaimed">0 DP</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label" data-i18n="pass.lastClaim">Last Claim:</span>
+                            <span class="stat-value" id="lastClaim">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/libs/particles.min.js"></script>
+    
+    <!-- 国际化配置 -->
+    <script src="js/i18n.js"></script>
+    
+    <!-- 公共脚本 -->
+    <script src="js/common.js"></script>
+    
+    <script>
+        // 粒子背景
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 100, density: { enable: true, value_area: 800 } },
+                color: { value: ['#00d4ff', '#ff00ff'] },
+                shape: { type: 'circle' },
+                opacity: { value: 0.6, random: true },
+                size: { value: 3, random: true },
+                line_linked: { enable: true, distance: 150, color: '#00d4ff', opacity: 0.3, width: 1 },
+                move: { enable: true, speed: 1.5, direction: 'none', random: true }
+            }
+        });
+
+        // 合约配置
+        const CONTRACTS = {
+            dpToken: '0xf7C464c7832e59855aa245Ecc7677f54B3460e7d',
+            debearPass: '0x29f2a6756E5B79C36Eb6699220CB56f7749C7514',
+            passSale: '0x40477c0B232cF7AaF939EC79d2Cad51669E101C6',
+            nftMining: '0x8883Ef27fFa001fAcc323E566Bce387A63Af5B4A'
+        };
+
+        const PASS_SALE_ABI = [
+            'function buyPass(uint256 passLevel, address inviter) payable',
+            'function getAllPrices() view returns (uint256[3])',
+            'function saleActive() view returns (bool)'
+        ];
+
+        const PASS_ABI = [
+            'function balanceOf(address,uint256) view returns (uint256)',
+            'function setApprovalForAll(address operator, bool approved)',
+            'function isApprovedForAll(address owner, address operator) view returns (bool)',
+            'function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes data)'
+        ];
+
+        const NFT_MINING_ABI = [
+            'function initializeMining()',
+            'function claimNFTReward()',
+            'function getUserMiningInfo(address) view returns (uint256,uint256,uint256,uint256,uint256,uint256,uint256)',
+            'function getTotalDailyReward(address) view returns (uint256)'
+        ];
+
+        const INVITATION_ABI = [
+            'function getInviter(address) view returns (address)'
+        ];
+
+        const INVITATION_SYSTEM = '0xAa733E91132dF624f391f1B426F56BD231486774';
+        const DEFAULT_INVITER = '0xfcbd23bdd16f0e10437ef26b4df3afb12e75a05d';
+
+        let provider, signer, userAddress;
+        let userInviter = null;
+        let pendingPassLevel = null;
+        let refreshInterval = null;
+        let pendingSendPassLevel = null;
+        let pendingSendPassName = null;
+
+        // Switch tab
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+        }
+
+        // Connect wallet
+        async function connectWallet() {
+            try {
+                const walletProvider = window.okxwallet || window.ethereum;
+                if (!walletProvider) {
+                    showMessage('Please install MetaMask or OKX Wallet', 'error');
+                    return;
+                }
+
+                await walletProvider.request({ method: 'eth_requestAccounts' });
+                
+                const chainId = await walletProvider.request({ method: 'eth_chainId' });
+                if (chainId !== '0x138de') {
+                    await walletProvider.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0x138de' }]
+                    });
+                }
+
+                provider = new ethers.providers.Web3Provider(walletProvider);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+
+                const shortAddr = userAddress.substring(0, 6) + '...' + userAddress.substring(38);
+                document.getElementById('connectBtn').textContent = shortAddr;
+                document.getElementById('connectBtn').disabled = true;
+
+                // Save connection state
+                localStorage.setItem('walletConnected', 'true');
+                localStorage.setItem('walletAddress', userAddress);
+
+                // Check inviter relationship
+                await checkInviter();
+
+                await refreshData();
+                startAutoRefresh();
+                showMessage('Wallet connected successfully', 'success');
+            } catch (error) {
+                showMessage('Connection failed: ' + error.message, 'error');
+            }
+        }
+
+        // Check and restore wallet connection
+        async function checkWalletConnection() {
+            const wasConnected = localStorage.getItem('walletConnected');
+            if (!wasConnected) return false;
+
+            try {
+                const walletProvider = window.okxwallet || window.ethereum;
+                if (!walletProvider) {
+                    localStorage.removeItem('walletConnected');
+                    localStorage.removeItem('walletAddress');
+                    return false;
+                }
+
+                // Check network first
+                const chainId = await walletProvider.request({ method: 'eth_chainId' });
+                if (chainId !== '0x138de') {
+                    console.log('Wrong network, need to switch to Berachain');
+                    localStorage.removeItem('walletConnected');
+                    localStorage.removeItem('walletAddress');
+                    return false;
+                }
+
+                const accounts = await walletProvider.request({ method: 'eth_accounts' });
+                if (accounts && accounts.length > 0) {
+                    provider = new ethers.providers.Web3Provider(walletProvider, 'any');
+                    signer = provider.getSigner();
+                    userAddress = await signer.getAddress();
+
+                    const shortAddr = userAddress.substring(0, 6) + '...' + userAddress.substring(38);
+                    document.getElementById('connectBtn').textContent = shortAddr;
+                    document.getElementById('connectBtn').disabled = true;
+
+                    localStorage.setItem('walletAddress', userAddress);
+
+                    await checkInviter();
+                    await refreshData();
+                    startAutoRefresh();
+                    return true;
+                } else {
+                    localStorage.removeItem('walletConnected');
+                    localStorage.removeItem('walletAddress');
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error checking wallet connection:', error);
+                localStorage.removeItem('walletConnected');
+                localStorage.removeItem('walletAddress');
+                return false;
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', async () => {
+            // Check if wallet is already connected
+            const walletRestored = await checkWalletConnection();
+            
+            // If no wallet connected, initialize a read-only provider for public data
+            if (!walletRestored && !provider) {
+                try {
+                    provider = new ethers.providers.JsonRpcProvider('https://rpc.berachain.com');
+                    await refreshData();
+                } catch (error) {
+                    console.error('Initialization failed:', error);
+                }
+            }
+        });
+
+        // Check inviter relationship
+        async function checkInviter() {
+            try {
+                const invitation = new ethers.Contract(INVITATION_SYSTEM, INVITATION_ABI, provider);
+                const inviter = await invitation.getInviter(userAddress);
+                
+                if (inviter === ethers.constants.AddressZero) {
+                    // New user, set to zero address (need modal for user to choose)
+                    userInviter = ethers.constants.AddressZero;
+                    console.log('🆕 New user, waiting to bind inviter');
+                } else {
+                    // Already has inviter
+                    userInviter = inviter;
+                    console.log('👥 Already has inviter:', userInviter);
+                }
+            } catch (error) {
+                console.error('Check inviter failed:', error);
+                userInviter = ethers.constants.AddressZero;
+            }
+        }
+
+        // Buy Pass
+        async function buyPass(level) {
+            if (!signer) {
+                showMessage('Please connect wallet first', 'error');
+                return;
+            }
+
+            // Re-check inviter relationship
+            await checkInviter();
+            console.log('👥 Current userInviter:', userInviter);
+            console.log('👥 DEFAULT_INVITER:', DEFAULT_INVITER);
+            
+            // Check if is new user (no inviter on chain)
+            if (userInviter === ethers.constants.AddressZero) {
+                console.log('ℹ️ New user, showing inviter modal');
+                // Show modal for user to enter inviter
+                pendingPassLevel = level;
+                showInviteModal();
+                return;
+            }
+
+            console.log('✅ Already has inviter, proceeding with purchase');
+            // Execute purchase
+            await executeBuyPass(level, userInviter);
+        }
+
+        // Execute Pass purchase
+        async function executeBuyPass(level, inviter) {
+            try {
+                const passSale = new ethers.Contract(CONTRACTS.passSale, PASS_SALE_ABI, signer);
+                const prices = await passSale.getAllPrices();
+                
+                showMessage('Purchasing Pass...', 'info');
+                const tx = await passSale.buyPass(level, inviter, { value: prices[level - 1] });
+                await tx.wait();
+                
+                showMessage('Pass purchased successfully!', 'success');
+                
+                // Update inviter relationship
+                userInviter = inviter;
+                
+                await refreshData();
+            } catch (error) {
+                showMessage('Purchase failed: ' + error.message, 'error');
+            }
+        }
+
+        // Show inviter modal
+        function showInviteModal() {
+            document.getElementById('inviteModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close inviter modal (without purchase)
+        function closeInviteModal(useDefault = false) {
+            document.getElementById('inviteModal').classList.remove('active');
+            document.body.style.overflow = '';
+            document.getElementById('modalInviterInput').value = '';
+            
+            // Only use default inviter when explicitly clicking Skip button
+            if (useDefault && pendingPassLevel) {
+                console.log('⚠️ Skipping, using default inviter:', DEFAULT_INVITER);
+                executeBuyPass(pendingPassLevel, DEFAULT_INVITER);
+                pendingPassLevel = null;
+            } else {
+                console.log('❌ Purchase cancelled');
+                pendingPassLevel = null;
+            }
+        }
+
+        // Confirm inviter
+        function confirmInviter() {
+            const inviterInput = document.getElementById('modalInviterInput').value.trim();
+            
+            // Validate inviter address format
+            if (inviterInput && !ethers.utils.isAddress(inviterInput)) {
+                alert('Please enter a valid Ethereum address format');
+                return;
+            }
+            
+            const inviter = inviterInput || DEFAULT_INVITER;
+            console.log('✅ Confirmed inviter:', inviter);
+            
+            // Close modal first (don't trigger default logic)
+            document.getElementById('inviteModal').classList.remove('active');
+            document.body.style.overflow = '';
+            document.getElementById('modalInviterInput').value = '';
+            
+            // Execute purchase
+            if (pendingPassLevel) {
+                executeBuyPass(pendingPassLevel, inviter);
+                pendingPassLevel = null;
+            }
+        }
+
+        // Initialize NFT Mining
+        async function initNFTMining() {
+            if (!signer) {
+                showMessage('Please connect wallet first', 'error');
+                return;
+            }
+            try {
+                const nftMining = new ethers.Contract(CONTRACTS.nftMining, NFT_MINING_ABI, signer);
+                showMessage('Initializing...', 'info');
+                const tx = await nftMining.initializeMining();
+                await tx.wait();
+                showMessage('Initialization successful!', 'success');
+                
+                // Hide initialization overlay
+                document.getElementById('initOverlay').classList.add('hidden');
+                
+                await refreshData();
+            } catch (error) {
+                showMessage('Initialization failed: ' + (error.reason || error.message), 'error');
+            }
+        }
+
+        // Claim NFT reward
+        async function claimNFTReward() {
+            if (!signer) return;
+            try {
+                const nftMining = new ethers.Contract(CONTRACTS.nftMining, NFT_MINING_ABI, signer);
+                showMessage('Claiming...', 'info');
+                const tx = await nftMining.claimNFTReward();
+                await tx.wait();
+                showMessage('Claimed successfully!', 'success');
+                await refreshData();
+            } catch (error) {
+                showMessage('Claim failed: ' + error.message, 'error');
+            }
+        }
+
+        // Refresh data
+        async function refreshData() {
+            if (!provider) return;
+
+            try {
+                // Get prices
+                const passSale = new ethers.Contract(CONTRACTS.passSale, PASS_SALE_ABI, provider);
+                const prices = await passSale.getAllPrices();
+                document.getElementById('priceStd').textContent = parseFloat(ethers.utils.formatEther(prices[0])).toFixed(3) + ' BERA';
+                document.getElementById('pricePre').textContent = parseFloat(ethers.utils.formatEther(prices[1])).toFixed(3) + ' BERA';
+                document.getElementById('priceEx').textContent = parseFloat(ethers.utils.formatEther(prices[2])).toFixed(3) + ' BERA';
+
+                if (!userAddress) return;
+
+                // Get Pass holding counts
+                const passNFT = new ethers.Contract(CONTRACTS.debearPass, PASS_ABI, provider);
+                const [std, pre, ex] = await Promise.all([
+                    passNFT.balanceOf(userAddress, 1),
+                    passNFT.balanceOf(userAddress, 2),
+                    passNFT.balanceOf(userAddress, 3)
+                ]);
+                document.getElementById('stdCount').textContent = std.toString();
+                document.getElementById('preCount').textContent = pre.toString();
+                document.getElementById('exCount').textContent = ex.toString();
+
+                // Update NFT showcase display
+                updateNFTShowcase(std.toNumber(), pre.toNumber(), ex.toNumber());
+
+                // Get mining info
+                const nftMining = new ethers.Contract(CONTRACTS.nftMining, NFT_MINING_ABI, provider);
+                const miningInfo = await nftMining.getUserMiningInfo(userAddress);
+                const dailyReward = await nftMining.getTotalDailyReward(userAddress);
+                
+                const perDayText = window.i18n ? window.i18n.t('pass.perDay') : '/day';
+                document.getElementById('dailyReward').textContent = parseFloat(ethers.utils.formatEther(dailyReward)).toFixed(0) + ' DP' + perDayText;
+                document.getElementById('totalClaimed').textContent = parseFloat(ethers.utils.formatEther(miningInfo[5])).toFixed(2) + ' DP';
+                document.getElementById('nftReward').textContent = parseFloat(ethers.utils.formatEther(miningInfo[4])).toFixed(4);
+                
+                if (Number(miningInfo[6]) > 0) {
+                    const lastClaim = new Date(Number(miningInfo[6]) * 1000);
+                    document.getElementById('lastClaim').textContent = lastClaim.toLocaleString('zh-CN');
+                }
+                
+                // Check if initialized: lastClaimTime > 0 means initialized
+                const isInitialized = Number(miningInfo[6]) > 0;
+                const initOverlay = document.getElementById('initOverlay');
+                if (isInitialized) {
+                    initOverlay.classList.add('hidden');
+                } else {
+                    initOverlay.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Refresh data failed:', error);
+            }
+        }
+
+        // Show message
+        function showMessage(text, type = 'info') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `<div class="alert ${type}">${text}</div>`;
+            setTimeout(() => { messageDiv.innerHTML = ''; }, 5000);
+        }
+
+        // Start auto refresh
+        function startAutoRefresh() {
+            // Clear previous timer
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            // Refresh every 10 seconds
+            refreshInterval = setInterval(async () => {
+                if (userAddress && provider) {
+                    await refreshData();
+                }
+            }, 10000);
+        }
+
+        // Stop auto refresh
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+        }
+
+        // Update NFT showcase
+        function updateNFTShowcase(stdCount, preCount, exCount) {
+            const showcase = document.getElementById('nftShowcase');
+            const grid = document.getElementById('nftGrid');
+            
+            // Check if holding any Pass
+            const hasAnyPass = stdCount > 0 || preCount > 0 || exCount > 0;
+            
+            if (!hasAnyPass) {
+                showcase.classList.remove('visible');
+                return;
+            }
+            
+            showcase.classList.add('visible');
+            grid.innerHTML = '';
+            
+            // Define Pass info
+            const passes = [
+                { count: stdCount, name: 'Standard Pass', badge: 'STANDARD', image: 'pass-picture/Standard.jpg', multiplier: '1x' },
+                { count: preCount, name: 'Premium Pass', badge: 'PREMIUM', image: 'pass-picture/Premium.jpg', multiplier: '3.5x' },
+                { count: exCount, name: 'Exclusive Pass', badge: 'EXCLUSIVE', image: 'pass-picture/Exclusive.jpg', multiplier: '7x' }
+            ];
+            
+            // Generate NFT cards
+            passes.forEach((pass, index) => {
+                if (pass.count > 0) {
+                    const nftItem = document.createElement('div');
+                    nftItem.className = 'nft-item';
+                    nftItem.innerHTML = `
+                        <img src="${pass.image}" alt="${pass.name}" class="nft-image">
+                        <div class="nft-count">Owned: ${pass.count}</div>
+                        <button class="nft-send-btn" onclick="openSendModal(${index + 1}, '${pass.name}', ${pass.count})">Send</button>
+                    `;
+                    grid.appendChild(nftItem);
+                }
+            });
+        }
+
+        // Open Send NFT modal
+        function openSendModal(passLevel, passName, available) {
+            if (!signer) {
+                showMessage('Please connect wallet first', 'error');
+                return;
+            }
+            
+            pendingSendPassLevel = passLevel;
+            pendingSendPassName = passName;
+            
+            document.getElementById('sendPassType').textContent = passName;
+            document.getElementById('sendPassAvailable').textContent = available;
+            document.getElementById('sendToAddress').value = '';
+            document.getElementById('sendAmount').value = '1';
+            document.getElementById('sendAmount').max = available;
+            
+            document.getElementById('sendModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close Send modal
+        function closeSendModal() {
+            document.getElementById('sendModal').classList.remove('active');
+            document.body.style.overflow = '';
+            pendingSendPassLevel = null;
+            pendingSendPassName = null;
+        }
+
+        // Confirm send
+        async function confirmSend() {
+            const toAddress = document.getElementById('sendToAddress').value.trim();
+            const amount = parseInt(document.getElementById('sendAmount').value);
+            
+            if (!toAddress || !ethers.utils.isAddress(toAddress)) {
+                showMessage('Please enter a valid recipient address', 'error');
+                return;
+            }
+            
+            if (!amount || amount < 1 || isNaN(amount)) {
+                showMessage('Please enter a valid amount', 'error');
+                return;
+            }
+            
+            if (!pendingSendPassLevel || !pendingSendPassName) {
+                showMessage('Please reselect the NFT to send', 'error');
+                return;
+            }
+            
+            // Save variables to avoid being cleared when modal closes
+            const passLevel = pendingSendPassLevel;
+            const passName = pendingSendPassName;
+            
+            closeSendModal();
+            
+            try {
+                const passNFT = new ethers.Contract(CONTRACTS.debearPass, PASS_ABI, signer);
+                
+                showMessage(`Sending ${amount} ${passName}...`, 'info');
+                
+                // Direct transfer, no self-approval needed
+                const tx = await passNFT.safeTransferFrom(
+                    userAddress,
+                    toAddress,
+                    ethers.BigNumber.from(passLevel),
+                    ethers.BigNumber.from(amount),
+                    '0x'
+                );
+                
+                await tx.wait();
+                showMessage('NFT sent successfully!', 'success');
+                
+                // Refresh data
+                await refreshData();
+            } catch (error) {
+                console.error('Send error:', error);
+                showMessage('Send failed: ' + (error.reason || error.message), 'error');
+            }
+        }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const hamburger = document.querySelector('.hamburger');
+            const mobileMenu = document.querySelector('.mobile-menu');
+            const overlay = document.querySelector('.mobile-menu-overlay');
+            
+            hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            if (mobileMenu.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+    </script>
+</body>
+</html>

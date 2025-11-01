@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debear Party - Next-Generation Web3 Trendy Metaverse Gaming Platform</title>
+    <meta name="description" content="Web3 decentralized gaming platform based on Berachain, providing NFT Pass, mining system and referral rewards">
+    <style>
+        /* ========== Global Styles ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Optimized Color System - Reduced Saturation for Better Readability */
+            --primary-gradient: linear-gradient(135deg, #00c4ef 0%, #e900e9 100%);
+            --secondary-gradient: linear-gradient(135deg, #4dd0e1 0%, #d91e5a 100%);
+            --neon-cyan: #00c4ef;
+            --neon-pink: #e900e9;
+            --neon-magenta: #d91e5a;
+            --dark-bg: #0a0e1a;
+            --dark-surface: #1a0a2e;
+            --dark-purple: #2d1b4e;
+            --text-primary: #ffffff;
+            --text-secondary: #b5c4e8;  /* Improved Contrast - WCAG AA Compliant */
+            --grid-color: rgba(0, 196, 239, 0.12);
+            
+            /* z-index Layer System */
+            --z-background: -1;
+            --z-content: 1;
+            --z-navbar: 100;
+            --z-mobile-menu-overlay: 110;
+            --z-mobile-menu: 120;
+            --z-hamburger: 130;
+            --z-toast: 200;
+            --z-modal: 300;
+            
+            /* Spacing System (8px base) */
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 24px;
+            --spacing-lg: 32px;
+            --spacing-xl: 40px;
+            --spacing-2xl: 48px;
+            --spacing-3xl: 64px;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* ========== Particle Background (Performance Optimized) ========== */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: var(--z-background);
+            background: 
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                radial-gradient(ellipse at top, #2d1b4e 0%, #1a0a2e 50%, #0a0e1a 100%);
+            background-size: 60px 60px, 60px 60px, 100% 100%;
+            background-position: 0 0, 0 0, center center;
+        }
+
+        /* Reduced Scanline Effect */
+        #particles-js::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 196, 239, 0.015) 0px,
+                transparent 2px,
+                transparent 4px
+            );
+            pointer-events: none;
+            animation: scan 12s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(60px); }
+        }
+
+        /* ========== Navbar (Optimized Layout) ========== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: var(--z-navbar);
+            padding: var(--spacing-md) 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 14, 26, 0.5);
+            backdrop-filter: blur(20px);
+            border-bottom: 2px solid rgba(0, 196, 239, 0.2);
+            box-shadow: 0 4px 24px rgba(0, 196, 239, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            padding: var(--spacing-sm) 5%;
+            background: rgba(10, 14, 26, 0.75);
+            box-shadow: 0 4px 24px rgba(233, 0, 233, 0.12);
+            border-bottom: 2px solid rgba(233, 0, 233, 0.25);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            cursor: pointer;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: var(--spacing-xl);
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-menu a:hover {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 8px rgba(0, 196, 239, 0.6);
+        }
+
+        .nav-menu a:focus {
+            outline: 2px solid var(--neon-cyan);
+            outline-offset: 4px;
+            border-radius: 4px;
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+            box-shadow: 0 0 6px rgba(0, 196, 239, 0.5);
+            transition: width 0.3s;
+        }
+
+        .nav-menu a:hover::after {
+            width: 100%;
+        }
+
+        .connect-btn {
+            padding: 12px var(--spacing-lg);
+            background: var(--primary-gradient);
+            border: 2px solid transparent;
+            border-radius: 25px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(0, 196, 239, 0.4), 0 0 32px rgba(233, 0, 233, 0.25);
+        }
+
+        .connect-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(0, 196, 239, 0.6), 0 0 40px rgba(233, 0, 233, 0.4);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .connect-btn:focus {
+            outline: 2px solid var(--neon-cyan);
+            outline-offset: 2px;
+        }
+
+        .connect-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ========== Language Switcher ========== */
+        .lang-switcher {
+            position: relative;
+            margin-right: var(--spacing-sm);
+        }
+
+        .lang-btn {
+            padding: 8px 16px;
+            background: rgba(0, 196, 239, 0.1);
+            border: 2px solid rgba(0, 196, 239, 0.3);
+            border-radius: 20px;
+            color: var(--neon-cyan);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            min-width: 50px;
+        }
+
+        .lang-btn:hover {
+            background: rgba(0, 196, 239, 0.2);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 12px rgba(0, 196, 239, 0.4);
+        }
+
+        .lang-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 196, 239, 0.3);
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 140px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 1000;
+            box-shadow: 0 8px 24px rgba(0, 196, 239, 0.2);
+        }
+
+        .lang-switcher:hover .lang-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .lang-option {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .lang-option:hover {
+            background: rgba(0, 196, 239, 0.1);
+            color: var(--neon-cyan);
+        }
+
+        .lang-option.active {
+            background: rgba(0, 196, 239, 0.15);
+            color: var(--neon-cyan);
+            font-weight: 600;
+        }
+
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        /* ========== Hamburger Menu Button ========== */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: var(--spacing-xs);
+            z-index: var(--z-hamburger);
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        /* ========== Mobile Sidebar Menu ========== */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            height: 100vh;
+            background: rgba(10, 14, 26, 0.98);
+            backdrop-filter: blur(20px);
+            border-left: 2px solid rgba(0, 196, 239, 0.3);
+            box-shadow: -4px 0 24px rgba(0, 196, 239, 0.2);
+            padding: var(--spacing-3xl) var(--spacing-lg) var(--spacing-lg);
+            transition: right 0.4s ease;
+            z-index: var(--z-mobile-menu);
+            overflow-y: auto;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: var(--z-mobile-menu-overlay);
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-nav-links {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .mobile-nav-links li {
+            margin: 20px 0;
+        }
+
+        .mobile-nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 600;
+            display: block;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .mobile-nav-links a:hover {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+            padding-left: 10px;
+        }
+
+        .mobile-connect-btn {
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        /* Mobile Language Selection */
+        .mobile-lang-selector {
+            margin-top: 20px;
+            padding: 10px 0;
+            border-top: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .mobile-lang-selector .lang-option {
+            padding: 12px;
+            cursor: pointer;
+        }
+
+        /* ========== Skip Link (Accessibility) ========== */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--primary-gradient);
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 0 0 8px 0;
+            z-index: 1000;
+            font-weight: 600;
+            transition: top 0.3s;
+        }
+
+        .skip-link:focus {
+            top: 0;
+            outline: 2px solid var(--neon-cyan);
+            outline-offset: 2px;
+        }
+
+        /* ========== Hero Section ========== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 100px 5% 50px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            z-index: 1;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: var(--spacing-xs) var(--spacing-md);
+            background: rgba(0, 196, 239, 0.12);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 20px;
+            color: var(--neon-cyan);
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: var(--spacing-lg);
+            animation: float 4s ease-in-out infinite;
+            box-shadow: 0 0 16px rgba(0, 196, 239, 0.3), inset 0 0 8px rgba(0, 196, 239, 0.15);
+            text-shadow: 0 0 8px rgba(0, 196, 239, 0.6);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .hero h1 {
+            font-size: 64px;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: var(--spacing-md);
+            background: linear-gradient(135deg, #00c4ef 0%, #ffffff 30%, #e900e9 70%, #ffffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 5s ease-in-out infinite alternate;
+            filter: drop-shadow(0 0 24px rgba(0, 196, 239, 0.5)) drop-shadow(0 0 48px rgba(233, 0, 233, 0.3));
+        }
+
+        @keyframes glow {
+            0% { 
+                filter: drop-shadow(0 0 20px rgba(0, 196, 239, 0.5)) drop-shadow(0 0 36px rgba(233, 0, 233, 0.3));
+            }
+            50% { 
+                filter: drop-shadow(0 0 32px rgba(233, 0, 233, 0.6)) drop-shadow(0 0 48px rgba(0, 196, 239, 0.35));
+            }
+            100% { 
+                filter: drop-shadow(0 0 24px rgba(0, 196, 239, 0.55)) drop-shadow(0 0 40px rgba(233, 0, 233, 0.4));
+            }
+        }
+
+        .hero p {
+            font-size: 22px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: var(--spacing-sm) var(--spacing-xl);
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 6px 24px rgba(0, 196, 239, 0.35), 0 0 32px rgba(233, 0, 233, 0.2);
+            border: 2px solid rgba(0, 196, 239, 0.25);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 196, 239, 0.5), 0 0 48px rgba(233, 0, 233, 0.35);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-primary:focus {
+            outline: 2px solid var(--neon-cyan);
+            outline-offset: 2px;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--neon-pink);
+            border: 2px solid var(--neon-pink);
+            box-shadow: 0 0 16px rgba(233, 0, 233, 0.25);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--neon-pink);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 0 24px rgba(233, 0, 233, 0.5), 0 4px 16px rgba(233, 0, 233, 0.35);
+        }
+
+        .btn-secondary:focus {
+            outline: 2px solid var(--neon-pink);
+            outline-offset: 2px;
+        }
+
+
+        /* ========== 功能展示区 ========== */
+        .features-section {
+            padding: 100px 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 70px;
+        }
+
+        .section-title h2 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-title p {
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(0, 196, 239, 0.05) 0%, rgba(233, 0, 233, 0.08) 100%);
+            border: 2px solid rgba(0, 196, 239, 0.22);
+            border-radius: 20px;
+            padding: var(--spacing-xl);
+            transition: all 0.35s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(233, 0, 233, 0.12) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.35s;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--neon-pink);
+            box-shadow: 0 16px 48px rgba(233, 0, 233, 0.35), 0 0 64px rgba(0, 196, 239, 0.18);
+        }
+
+        .feature-icon {
+            font-size: 56px;
+            margin-bottom: var(--spacing-md);
+            display: inline-block;
+            animation: bounce 3s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .feature-card h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+
+        /* ========== Roadmap 路线图 ========== */
+        .roadmap-section {
+            padding: 100px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .timeline {
+            position: relative;
+            margin: 50px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--primary-gradient);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            margin: 50px 0;
+            position: relative;
+        }
+
+        .timeline-content {
+            width: 45%;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(255, 0, 255, 0.08) 100%);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            position: relative;
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.2);
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content {
+            margin-left: 0;
+        }
+
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-left: 55%;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            top: 30px;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.8), 0 0 50px rgba(255, 0, 255, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .timeline-content h3 {
+            font-size: 24px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .timeline-content p {
+            color: var(--text-secondary);
+        }
+
+        /* ========== Footer ========== */
+        .footer {
+            padding: 60px 5% 30px;
+            background: rgba(10, 14, 26, 0.9);
+            border-top: 2px solid rgba(0, 212, 255, 0.3);
+            box-shadow: 0 -4px 30px rgba(0, 212, 255, 0.1);
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            max-width: 1400px;
+            margin: 0 auto 40px;
+        }
+
+        .footer-section h4 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin: 10px 0;
+        }
+
+        .footer-section a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.6);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(255, 0, 255, 0.2) 100%);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .social-links a:hover {
+            background: var(--primary-gradient);
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 8px 20px rgba(0, 212, 255, 0.4), 0 0 30px rgba(255, 0, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(0, 212, 255, 0.2);
+            color: var(--text-secondary);
+        }
+
+        /* ========== Responsive Design ========== */
+        /* Tablet */
+        @media (max-width: 1024px) {
+            .hero h1 { font-size: 52px; }
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 36px; }
+            .hero p { font-size: 18px; }
+            .section-title h2 { font-size: 36px; }
+            .nav-menu { display: none; }
+            .hamburger { display: flex; }
+            .navbar .connect-btn { display: none; }
+            .mobile-connect-btn { display: block; }
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            /* Timeline Mobile Optimization - Avoid !important */
+            .timeline::before { 
+                left: var(--spacing-md);
+            }
+            .timeline-content { 
+                width: calc(100% - 72px);
+            }
+            .timeline-item:nth-child(odd) .timeline-content,
+            .timeline-item:nth-child(even) .timeline-content {
+                margin-left: 72px;
+            }
+            .timeline-dot { 
+                left: var(--spacing-md);
+            }
+        }
+
+        /* Small Screen Mobile */
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 32px; }
+            .hero p { font-size: 16px; }
+            .section-title h2 { font-size: 28px; }
+            .pass-grid, .features-grid {
+                gap: var(--spacing-sm);
+            }
+        }
+
+        /* ========== Scroll Animation ========== */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Skip Link for Accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- Particle Background -->
+    <div id="particles-js"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="index.html" class="logo">🐻 Debear Party</a>
+        <ul class="nav-menu">
+            <li><a href="index.html" class="active" data-i18n="nav.home">Home</a></li>
+            <li><a href="swap.html" data-i18n="nav.swap">Swap</a></li>
+            <li><a href="pass-nft.html" data-i18n="nav.pass">Pass NFT</a></li>
+            <li><a href="t-engine.html" data-i18n="nav.tengine">T-Engine</a></li>
+            <li><a href="gamefi.html" data-i18n="nav.gamefi">GameFi</a></li>
+        </ul>
+        <div class="nav-buttons">
+            <!-- Language Switcher -->
+            <div class="lang-switcher">
+                <button class="lang-btn">EN</button>
+                <div class="lang-dropdown">
+                    <div class="lang-option active" data-lang="en" onclick="window.i18n?.setLanguage('en')">
+                        <span data-i18n="lang.en">English</span>
+                    </div>
+                    <div class="lang-option" data-lang="zh-TW" onclick="window.i18n?.setLanguage('zh-TW')">
+                        <span data-i18n="lang.zh">繁體中文</span>
+                    </div>
+                </div>
+            </div>
+            <button class="connect-btn" onclick="connectWallet()" data-i18n="nav.connect">Connect Wallet</button>
+            <button class="hamburger" 
+                    onclick="toggleMobileMenu()" 
+                    aria-label="Toggle navigation menu"
+                    aria-expanded="false"
+                    aria-controls="mobile-menu">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- Mobile Sidebar Menu -->
+    <div class="mobile-menu" id="mobile-menu" role="navigation" aria-label="Mobile navigation">
+        <ul class="mobile-nav-links">
+            <li><a href="index.html" class="active" data-i18n="nav.home">Home</a></li>
+            <li><a href="swap.html" data-i18n="nav.swap">Swap</a></li>
+            <li><a href="pass-nft.html" data-i18n="nav.pass">Pass NFT</a></li>
+            <li><a href="t-engine.html" data-i18n="nav.tengine">T-Engine</a></li>
+            <li><a href="gamefi.html" data-i18n="nav.gamefi">GameFi</a></li>
+        </ul>
+        <!-- Mobile Language Selection -->
+        <div class="mobile-lang-selector">
+            <div class="lang-option" data-lang="en" onclick="window.i18n?.setLanguage('en')">
+                <span data-i18n="lang.en">English</span>
+            </div>
+            <div class="lang-option" data-lang="zh-TW" onclick="window.i18n?.setLanguage('zh-TW')">
+                <span data-i18n="lang.zh">繁體中文</span>
+            </div>
+        </div>
+        <button class="connect-btn mobile-connect-btn" onclick="connectWallet()" data-i18n="nav.connect">Connect Wallet</button>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="main-content" role="main">
+        <div class="hero-content">
+            <div class="hero-badge" data-i18n="hero.badge">🚀 Built on Berachain Mainnet</div>
+            <h1 data-i18n="hero.title">Debear Party</h1>
+            <p data-i18n="hero.description">Innovative Web3.0 Comprehensive Platform - DeFi, GameFi, and Trendy Collectibles Await Your Discovery</p>
+            <div class="cta-buttons">
+                <a href="#features" class="btn-secondary" data-i18n="hero.learnmore">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- 功能展示区 -->
+    <section id="features" class="features-section">
+        <div class="section-title">
+            <h2 data-i18n="features.title">Core Features</h2>
+            <p data-i18n="features.subtitle">One-Stop Web3 Gaming Ecosystem</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🎫</div>
+                <h3 data-i18n="feature.pass.title">NFT Pass System</h3>
+                <p data-i18n="feature.pass.desc">Purchase Standard, Premium, or Exclusive Pass to enjoy different levels of mining power bonuses and exclusive benefits.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">⚡</div>
+                <h3 data-i18n="feature.tengine.title">T-Engine Transformation</h3>
+                <p data-i18n="feature.tengine.desc">Revolutionary T-Engine mechanism: Permanently burn DP tokens to get 4x mining shares, driving value growth through strong deflation.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🤝</div>
+                <h3 data-i18n="feature.invite.title">Referral Rewards</h3>
+                <p data-i18n="feature.invite.desc">Holding Pass unlocks referral benefits. Share with friends to build the Debear Party community together.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">💎</div>
+                <h3 data-i18n="feature.dao.title">DAO Governance & RWA Assets</h3>
+                <p data-i18n="feature.dao.desc">Pass holders enjoy DAO governance voting rights, and will receive platform fee dividends, RWA asset income distribution, and GameFi privileges.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🔒</div>
+                <h3 data-i18n="feature.security.title">Secure & Reliable</h3>
+                <p data-i18n="feature.security.desc">Deployed on Berachain mainnet with audited smart contracts, ensuring asset security.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🎮</div>
+                <h3 data-i18n="feature.gamefi.title">GameFi & Trendy Metaverse</h3>
+                <p data-i18n="feature.gamefi.desc">Upcoming social GameFi games combined with trendy RWA assets, creating a play-to-earn metaverse experience.</p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Roadmap 路线图 -->
+    <section id="roadmap" class="roadmap-section">
+        <div class="section-title">
+            <h2 data-i18n="roadmap.title">Roadmap</h2>
+            <p data-i18n="roadmap.subtitle">Our Vision & Planning</p>
+        </div>
+        <div class="timeline">
+            <div class="timeline-item fade-in">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <h3 data-i18n="roadmap.phase1.title">Phase 1: Launch & Community Building (Q2-Q3 2025) ✅</h3>
+                    <p data-i18n="roadmap.phase1.desc">• Pass Sales (Standard/Premium/Exclusive)<br>• DP Token Launch & Initial Liquidity Pool<br>• NFT Mining & T-Engine Features Launch<br>• Community Building & Incentive Activities</p>
+                </div>
+            </div>
+            <div class="timeline-item fade-in">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <h3 data-i18n="roadmap.phase2.title">Phase 2: Ecosystem Expansion (Q4 2025 - Q1 2026)</h3>
+                    <p data-i18n="roadmap.phase2.desc">• GameFi Social Game Launch<br>• DAO Governance System Activation<br>• RWA Trendy Asset Module Development<br>• Liquidity Staking & PoL Rewards</p>
+                </div>
+            </div>
+            <div class="timeline-item fade-in">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <h3 data-i18n="roadmap.milestone.title">Milestone Goals</h3>
+                    <p data-i18n="roadmap.milestone.desc">• Phase 1: 2,000 Passes Sold Out, 1000+ Community Members, TVL Reaches $5M<br>• Phase 2: TVL Climbs to $20M, 5000+ Monthly Active Users, RWA Assets Launch</p>
+                </div>
+            </div>
+            <div class="timeline-item fade-in">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <h3 data-i18n="roadmap.vision.title">Future Vision</h3>
+                    <p data-i18n="roadmap.vision.desc">• Become the Most Innovative Trendy Metaverse Platform on Berachain<br>• Connect Web3 Technology with Trendy Culture<br>• Build a Fair and Transparent Value Ecosystem</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-section">
+                <h4 data-i18n="footer.about.title">About Us</h4>
+                <p style="color: var(--text-secondary);" data-i18n="footer.about.desc">Debear Party is a Web3 gaming platform based on Berachain, committed to building a decentralized gaming ecosystem.</p>
+                <div class="social-links">
+                    <a href="#" title="Twitter">𝕏</a>
+                    <a href="#" title="Telegram">✈️</a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4 data-i18n="footer.developer.title">Developer</h4>
+                <ul>
+                    <li><a href="whitepaper-en.html" data-i18n="footer.developer.whitepaper">Whitepaper</a></li>
+                    <li><a href="#" data-i18n="footer.developer.contract">Smart Contracts</a></li>
+                    <li><a href="#" data-i18n="footer.developer.audit">Audit Report</a></li>
+                    <li id="owner-link" style="display: none;"><a href="owner/admin.html" data-i18n="footer.developer.test">Debear Party Complete Test Page</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4 data-i18n="footer.community.title">Community</h4>
+                <ul>
+                    <li><a href="#" data-i18n="footer.community.twitter">Twitter</a></li>
+                    <li><a href="#" data-i18n="footer.community.telegram">Telegram</a></li>
+                    <li><a href="#" data-i18n="footer.community.help">Help Center</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p data-i18n="footer.copyright">© 2025 Debear Party. All rights reserved. Built on Berachain.</p>
+        </div>
+    </footer>
+
+    <!-- 粒子效果库 (本地化) -->
+    <script src="js/libs/particles.min.js"></script>
+    
+    <!-- 国际化配置 -->
+    <script src="js/i18n.js"></script>
+    
+    <script>
+        // ========== 粒子背景配置 ==========
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 100, density: { enable: true, value_area: 800 } },
+                color: { value: ['#00d4ff', '#ff00ff', '#4dd0e1', '#e91e63'] },
+                shape: { type: 'circle' },
+                opacity: { value: 0.6, random: true, anim: { enable: true, speed: 1, opacity_min: 0.2 } },
+                size: { value: 3, random: true, anim: { enable: true, speed: 3, size_min: 0.5 } },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#00d4ff',
+                    opacity: 0.3,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 1.5,
+                    direction: 'none',
+                    random: true,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: { enable: true, mode: 'grab' },
+                    onclick: { enable: true, mode: 'push' }
+                },
+                modes: {
+                    grab: { distance: 200, line_linked: { opacity: 0.8 } },
+                    push: { particles_nb: 4 }
+                }
+            }
+        });
+
+        // ========== Navbar scroll effect ==========
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // ========== Scroll reveal animation ==========
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+
+        // ========== Connect Wallet ==========
+        async function connectWallet() {
+            try {
+                const walletProvider = window.okxwallet || window.ethereum;
+                if (!walletProvider) {
+                    const msg = window.i18n?.t('toast.wallet.noProvider') || 'Please install MetaMask or OKX Wallet!';
+                    if (window.DebearParty?.toast) {
+                        window.DebearParty.toast.error(msg);
+                    } else {
+                        alert(msg);
+                    }
+                    return;
+                }
+
+                await walletProvider.request({ method: 'eth_requestAccounts' });
+                
+                const chainId = await walletProvider.request({ method: 'eth_chainId' });
+                if (chainId !== '0x138de') {
+                    try {
+                        await walletProvider.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0x138de' }]
+                        });
+                    } catch (error) {
+                        const msg = window.i18n?.t('toast.wallet.switchNetwork') || 'Please switch to Berachain Mainnet (Chain ID: 80094)';
+                        if (window.DebearParty?.toast) {
+                            window.DebearParty.toast.error(msg);
+                        } else {
+                            alert(msg);
+                        }
+                        return;
+                    }
+                }
+
+                const accounts = await walletProvider.request({ method: 'eth_accounts' });
+                const userAddress = accounts[0];
+                
+                // Update button display
+                const shortAddr = userAddress.substring(0, 6) + '...' + userAddress.substring(38);
+                const connectBtns = document.querySelectorAll('.connect-btn');
+                connectBtns.forEach(btn => {
+                    btn.textContent = shortAddr;
+                    btn.disabled = true;
+                });
+                
+                // Save connection state
+                localStorage.setItem('walletConnected', 'true');
+                localStorage.setItem('walletAddress', userAddress);
+                
+                // Check Owner permissions
+                checkOwnerAccess();
+                
+                const successMsg = window.i18n?.t('toast.wallet.connected') || 'Wallet connected successfully!';
+                if (window.DebearParty?.toast) {
+                    window.DebearParty.toast.success(successMsg);
+                } else {
+                    alert(successMsg);
+                }
+            } catch (error) {
+                console.error('Connect wallet error:', error);
+                const errorMsg = (window.i18n?.t('toast.wallet.failed') || 'Failed to connect wallet') + ': ' + error.message;
+                if (window.DebearParty?.toast) {
+                    window.DebearParty.toast.error(errorMsg);
+                } else {
+                    alert(errorMsg);
+                }
+            }
+        }
+
+        // ========== Check and restore wallet connection ==========
+        async function checkWalletConnection() {
+            const wasConnected = localStorage.getItem('walletConnected');
+            if (!wasConnected) return;
+
+            try {
+                const walletProvider = window.okxwallet || window.ethereum;
+                if (!walletProvider) return;
+
+                // Check if wallet is still connected
+                const accounts = await walletProvider.request({ method: 'eth_accounts' });
+                if (accounts && accounts.length > 0) {
+                    const userAddress = accounts[0];
+                    const shortAddr = userAddress.substring(0, 6) + '...' + userAddress.substring(38);
+                    const connectBtns = document.querySelectorAll('.connect-btn');
+                    connectBtns.forEach(btn => {
+                        btn.textContent = shortAddr;
+                        btn.disabled = true;
+                    });
+                    localStorage.setItem('walletAddress', userAddress);
+                } else {
+                    // Wallet disconnected, clear state
+                    localStorage.removeItem('walletConnected');
+                    localStorage.removeItem('walletAddress');
+                }
+            } catch (error) {
+                console.error('Error checking wallet connection:', error);
+            }
+        }
+
+        // ========== Check wallet connection on page load ==========
+        window.addEventListener('load', () => {
+            checkWalletConnection();
+            checkOwnerAccess();
+            updateWhitepaperLink();
+        });
+
+        // ========== Listen for language change events ==========
+        window.addEventListener('languageChanged', () => {
+            updateWhitepaperLink();
+        });
+
+        // ========== Update whitepaper link based on current language ==========
+        function updateWhitepaperLink() {
+            const whitepaperLink = document.querySelector('a[data-i18n="footer.developer.whitepaper"]');
+            if (whitepaperLink && window.i18n) {
+                const currentLang = window.i18n.getCurrentLanguage();
+                // Set whitepaper link based on current language
+                whitepaperLink.href = currentLang === 'zh-TW' ? 'whitepaper.html' : 'whitepaper-en.html';
+            }
+        }
+
+        // ========== Check Owner permissions ==========
+        async function checkOwnerAccess() {
+            try {
+                const walletProvider = window.okxwallet || window.ethereum;
+                if (!walletProvider) return;
+
+                const accounts = await walletProvider.request({ method: 'eth_accounts' });
+                if (accounts && accounts.length > 0) {
+                    const userAddress = accounts[0].toLowerCase();
+                    // Owner address
+                    const ownerAddress = '0xd8b4286c2f299220830f7228bab15225b4ea8379'.toLowerCase();
+                    
+                    if (userAddress === ownerAddress) {
+                        document.getElementById('owner-link').style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking owner access:', error);
+            }
+        }
+
+        // ========== Mobile menu toggle ==========
+        function toggleMobileMenu() {
+            const hamburger = document.querySelector('.hamburger');
+            const mobileMenu = document.querySelector('.mobile-menu');
+            const overlay = document.querySelector('.mobile-menu-overlay');
+            
+            const isActive = hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // Update ARIA attributes for accessibility
+            hamburger.setAttribute('aria-expanded', isActive.toString());
+            
+            // Prevent background scrolling
+            if (mobileMenu.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        // ========== Smooth scroll ==========
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
