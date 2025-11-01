@@ -1563,8 +1563,7 @@
                 const miningInfo = await nftMining.getUserMiningInfo(userAddress);
                 const dailyReward = await nftMining.getTotalDailyReward(userAddress);
                 
-                const perDayText = window.i18n ? window.i18n.t('pass.perDay') : '/day';
-                document.getElementById('dailyReward').textContent = parseFloat(ethers.utils.formatEther(dailyReward)).toFixed(0) + ' DP' + perDayText;
+                document.getElementById('dailyReward').textContent = parseFloat(ethers.utils.formatEther(dailyReward)).toFixed(0) + ' DP/Day';
                 document.getElementById('totalClaimed').textContent = parseFloat(ethers.utils.formatEther(miningInfo[5])).toFixed(2) + ' DP';
                 document.getElementById('nftReward').textContent = parseFloat(ethers.utils.formatEther(miningInfo[4])).toFixed(4);
                 
