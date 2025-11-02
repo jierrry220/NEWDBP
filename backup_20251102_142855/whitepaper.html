@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debear Party 白皮书 v1.0 - 潮流元宇宙游戏平台</title>
+    <meta name="description" content="Debear Party 白皮书 - 基于 Berachain 的创新型 Web3 综合平台">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #00c4ef 0%, #e900e9 100%);
+            --secondary-gradient: linear-gradient(135deg, #4dd0e1 0%, #d91e5a 100%);
+            --neon-cyan: #00c4ef;
+            --neon-pink: #e900e9;
+            --neon-magenta: #d91e5a;
+            --dark-bg: #0a0e1a;
+            --dark-surface: #1a0a2e;
+            --dark-purple: #2d1b4e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0b1d4;
+            --grid-color: rgba(0, 196, 239, 0.12);
+            
+            /* z-index 层级系统 */
+            --z-background: -1;
+            --z-content: 1;
+            --z-navbar: 100;
+            --z-mobile-menu-overlay: 110;
+            --z-mobile-menu: 120;
+            --z-hamburger: 130;
+            --z-toast: 200;
+            --z-modal: 300;
+            
+            /* 间距系统 */
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 24px;
+            --spacing-lg: 32px;
+            --spacing-xl: 40px;
+            --spacing-2xl: 48px;
+            --spacing-3xl: 64px;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        /* 粒子背景 */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background: radial-gradient(ellipse at top, #2d1b4e 0%, #1a0a2e 50%, #0a0e1a 100%);
+        }
+
+        /* ========== 导航栏 ========== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: var(--z-navbar);
+            padding: var(--spacing-md) 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 14, 26, 0.5);
+            backdrop-filter: blur(20px);
+            border-bottom: 2px solid rgba(0, 196, 239, 0.2);
+            box-shadow: 0 4px 24px rgba(0, 196, 239, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            padding: var(--spacing-sm) 5%;
+            background: rgba(10, 14, 26, 0.75);
+            box-shadow: 0 4px 24px rgba(233, 0, 233, 0.12);
+            border-bottom: 2px solid rgba(233, 0, 233, 0.25);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: var(--spacing-xl);
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-menu a:hover {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 8px rgba(0, 196, 239, 0.6);
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+            box-shadow: 0 0 6px rgba(0, 196, 239, 0.5);
+            transition: width 0.3s;
+        }
+
+        .nav-menu a:hover::after {
+            width: 100%;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .connect-btn {
+            padding: 12px var(--spacing-lg);
+            background: var(--primary-gradient);
+            border: 2px solid transparent;
+            border-radius: 25px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(0, 196, 239, 0.4), 0 0 32px rgba(233, 0, 233, 0.25);
+        }
+
+        .connect-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(0, 196, 239, 0.6), 0 0 40px rgba(233, 0, 233, 0.4);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .connect-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 白皮书容器 */
+        .whitepaper-container {
+            max-width: 900px;
+            margin: 120px auto 50px;
+            padding: 0 5%;
+        }
+
+        /* 标题样式 */
+        .wp-header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .wp-header h1 {
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 15px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .wp-header .subtitle {
+            font-size: 24px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .wp-header .meta {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* 目录 */
+        .toc {
+            background: rgba(0, 212, 255, 0.05);
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 50px;
+        }
+
+        .toc h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--neon-cyan);
+        }
+
+        .toc ol {
+            list-style: none;
+            counter-reset: toc-counter;
+        }
+
+        .toc li {
+            counter-increment: toc-counter;
+            margin: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .toc li::before {
+            content: counter(toc-counter) ".";
+            position: absolute;
+            left: 0;
+            color: var(--neon-cyan);
+            font-weight: 700;
+        }
+
+        .toc a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .toc a:hover {
+            color: var(--neon-cyan);
+        }
+
+        /* 章节样式 */
+        .section {
+            margin-bottom: 60px;
+        }
+
+        .section h2 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 25px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 30px 0 20px;
+            color: var(--neon-cyan);
+        }
+
+        .section h4 {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 25px 0 15px;
+            color: var(--neon-pink);
+        }
+
+        .section h5 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 20px 0 10px;
+            color: var(--text-primary);
+        }
+
+        .section p {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .section ul, .section ol {
+            margin: 20px 0;
+            padding-left: 30px;
+            color: var(--text-secondary);
+        }
+
+        .section li {
+            margin: 10px 0;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            background: rgba(0, 212, 255, 0.03);
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        th {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--neon-cyan);
+            font-weight: 700;
+        }
+
+        td {
+            color: var(--text-secondary);
+        }
+
+        /* 高亮框 */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(255, 0, 255, 0.08) 100%);
+            border-left: 4px solid var(--neon-cyan);
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 10px;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, rgba(255, 0, 255, 0.08) 0%, rgba(233, 30, 99, 0.08) 100%);
+            border-left: 4px solid var(--neon-pink);
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 10px;
+        }
+
+        /* Emoji 图标 */
+        .emoji-icon {
+            font-size: 32px;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        /* ========== 语言切换器 ========== */
+        .lang-switcher {
+            position: relative;
+            margin-right: var(--spacing-sm);
+        }
+        
+        .lang-btn {
+            padding: 8px 16px;
+            background: rgba(0, 196, 239, 0.1);
+            border: 2px solid rgba(0, 196, 239, 0.3);
+            border-radius: 20px;
+            color: var(--neon-cyan);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            min-width: 50px;
+        }
+        
+        .lang-btn:hover {
+            background: rgba(0, 196, 239, 0.2);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 12px rgba(0, 196, 239, 0.4);
+        }
+        
+        .lang-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 196, 239, 0.3);
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 140px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 1000;
+            box-shadow: 0 8px 24px rgba(0, 196, 239, 0.2);
+        }
+        
+        .lang-switcher:hover .lang-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .lang-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            color: white;
+        }
+        
+        .lang-option:hover {
+            background: rgba(0, 196, 239, 0.15);
+        }
+        
+        .lang-option.active {
+            background: rgba(0, 196, 239, 0.1);
+            color: var(--neon-cyan);
+        }
+
+        /* ========== 汉堡菜单 ========== */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 10px;
+            z-index: var(--z-hamburger);
+            background: transparent;
+            border: none;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0, 196, 239, 0.5);
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        /* ========== 移动端菜单 ========== */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: var(--z-mobile-menu-overlay);
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            height: 100vh;
+            background: rgba(10, 14, 26, 0.98);
+            backdrop-filter: blur(20px);
+            border-left: 2px solid rgba(0, 196, 239, 0.3);
+            box-shadow: -4px 0 30px rgba(0, 196, 239, 0.2);
+            padding: 80px 30px 30px;
+            transition: right 0.4s ease;
+            z-index: var(--z-mobile-menu);
+            overflow-y: auto;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-nav-links {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .mobile-nav-links li {
+            margin: 0;
+            padding: 0;
+        }
+
+        .mobile-nav-links a {
+            display: block;
+            padding: 15px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-radius: 12px;
+        }
+
+        .mobile-nav-links a:hover,
+        .mobile-nav-links a.active {
+            background: rgba(0, 196, 239, 0.1);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 8px rgba(0, 196, 239, 0.5);
+        }
+
+        .mobile-connect-btn {
+            display: none;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* 底部 */
+        .footer {
+            text-align: center;
+            padding: 40px 5%;
+            border-top: 2px solid rgba(0, 212, 255, 0.2);
+            color: var(--text-secondary);
+            margin-top: 80px;
+        }
+
+        /* 返回主页按钮 */
+        .back-home-btn {
+            padding: 8px 20px;
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 20px;
+            color: var(--neon-cyan);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .back-home-btn:hover {
+            background: var(--neon-cyan);
+            color: white;
+            box-shadow: 0 0 20px rgba(0, 196, 239, 0.5);
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 768px) {
+            .wp-header h1 { font-size: 32px; }
+            .wp-header .subtitle { font-size: 18px; }
+            .section h2 { font-size: 28px; }
+            .section h3 { font-size: 22px; }
+            .section h4 { font-size: 18px; }
+            .whitepaper-container { margin-top: 100px; }
+            
+            table {
+                font-size: 14px;
+            }
+            
+            th, td {
+                padding: 10px;
+            }
+            
+            .nav-menu { display: none; }
+            .navbar .connect-btn { display: none; }
+            .hamburger { display: none; }
+            .mobile-menu { display: none; }
+            .mobile-menu-overlay { display: none; }
+            .mobile-connect-btn { display: none; }
+            .lang-switcher { display: none; }
+            
+            /* 移动端只显示返回按钮 */
+            .back-home-btn { display: inline-block; }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <a href="index.html" class="logo">🐻 Debear Party</a>
+        <ul class="nav-menu">
+            <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+            <li><a href="swap.html" data-i18n="nav.swap">Swap</a></li>
+            <li><a href="pass-nft.html" data-i18n="nav.pass">Pass NFT</a></li>
+            <li><a href="t-engine.html" data-i18n="nav.tengine">T-Engine</a></li>
+            <li><a href="gamefi.html" data-i18n="nav.gamefi">GameFi</a></li>
+        </ul>
+        <div class="nav-buttons">
+            <!-- 返回主页按钮 (移动端显示) -->
+            <a href="index.html" class="back-home-btn">← Home</a>
+            <!-- 语言切换器 -->
+            <div class="lang-switcher">
+                <button class="lang-btn">EN</button>
+                <div class="lang-dropdown">
+                    <div class="lang-option active" data-lang="en" onclick="window.i18n?.setLanguage('en')">
+                        <span data-i18n="lang.en">English</span>
+                    </div>
+                    <div class="lang-option" data-lang="zh-TW" onclick="window.i18n?.setLanguage('zh-TW')">
+                        <span data-i18n="lang.zh">繁體中文</span>
+                    </div>
+                </div>
+            </div>
+            <button class="connect-btn" onclick="connectWallet()" data-i18n="nav.connect">Connect Wallet</button>
+            <button class="hamburger" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 移动端菜单遮罩 -->
+    <div class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- 移动端侧边栏菜单 -->
+    <div class="mobile-menu">
+        <ul class="mobile-nav-links">
+            <li><a href="index.html" data-i18n="nav.home">← Back to Home</a></li>
+        </ul>
+        <!-- 移动端语言选择 -->
+        <div style="margin-top: 20px; padding: 10px 0; border-top: 1px solid rgba(0, 212, 255, 0.2);">
+            <h4 style="color: var(--neon-cyan); padding: 0 15px; margin-bottom: 10px; font-size: 14px;">🌐 Language / 語言</h4>
+            <div class="lang-option" style="padding: 12px; cursor: pointer;" onclick="window.i18n?.setLanguage('en'); window.location.href='whitepaper-en.html';">
+                <span data-i18n="lang.en">English</span>
+            </div>
+            <div class="lang-option active" style="padding: 12px; cursor: pointer;" onclick="window.i18n?.setLanguage('zh-TW'); window.location.href='whitepaper.html';">
+                <span data-i18n="lang.zh">繁體中文</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 白皮书内容 -->
+    <div class="whitepaper-container">
+        <!-- 标题 -->
+        <div class="wp-header">
+            <h1 data-i18n="whitepaper.title">Debear Party Whitepaper</h1>
+            <p class="subtitle" data-i18n="whitepaper.subtitle">Trendy Metaverse Gaming Platform</p>
+            <div class="meta">
+                <span><strong data-i18n="whitepaper.version">Version:</strong> v1.0</span>
+                <span><strong data-i18n="whitepaper.releaseDate">Release Date:</strong> 2025</span>
+            </div>
+        </div>
+
+        <!-- 目录 -->
+        <div class="toc">
+            <h2 data-i18n="whitepaper.toc">📋 Table of Contents</h2>
+            <ol>
+                <li><a href="#section-1">项目概述</a></li>
+                <li><a href="#section-2">愿景与使命</a></li>
+                <li><a href="#section-3">核心创新</a></li>
+                <li><a href="#section-4">Pass权益体系</a></li>
+                <li><a href="#section-5">DP代币经济学</a></li>
+                <li><a href="#section-6">T-Engine模式</a></li>
+                <li><a href="#section-7">邀请激励系统</a></li>
+                <li><a href="#section-8">流动性质押</a></li>
+                <li><a href="#section-9">生态发展规划</a></li>
+                <li><a href="#section-10">团队与合作</a></li>
+                <li><a href="#section-11">风险提示</a></li>
+            </ol>
+        </div>
+
+        <!-- 1. 项目概述 -->
+        <div class="section" id="section-1">
+            <h2>1. 项目概述</h2>
+            
+            <h3>什么是Debear Party？</h3>
+            <p>Debear Party是一个基于Berachain的创新型Web3综合平台，集成了NFT、DeFi、Gamefi、潮流文化和资产管理。我们的独特之处在于使用了T-Engine（嬗变引擎）机制，多层次的NFT权益体系，社交类游戏，旨在为用户提供持续的收益和价值增长。</p>
+
+            <h4>核心特点：</h4>
+            <ul>
+                <li><strong>三级Pass体系</strong>：Standard / Premium / Exclusive分级权益。</li>
+                <li><strong>T-Engine创新</strong>：通过嬗变引擎的通缩机制推动价值增长。</li>
+                <li><strong>多重收益来源</strong>：包括挖矿、质押、邀请奖励、GameFi以及RWA（现实世界资产）。</li>
+                <li><strong>社区驱动</strong>：采用邀请机制和DAO治理(即将上线)。</li>
+                <li><strong>元宇宙游戏</strong>：即将推出的创新社交类GameFi玩法。(即将上线)</li>
+                <li><strong>RWA资产</strong>：结合潮流实物和实体夜店产业资产的Web3创新。(即将上线)</li>
+            </ul>
+        </div>
+
+        <!-- 2. 愿景与使命 -->
+        <div class="section" id="section-2">
+            <h2>2. 愿景与使命</h2>
+            
+            <h3>愿景</h3>
+            <p>成为Berachain生态系统中最具有创新性的潮流元宇宙平台，连接Web3技术和潮流文化，赋予数字资产以真实的娱乐价值。</p>
+
+            <h3>使命</h3>
+            <ul>
+                <li>为Berachain带来更多新活力。</li>
+                <li>为DeFi投资者提供可持续的收益模型。</li>
+                <li>为游戏爱好者提供有趣好玩的社交游戏体验，边玩边赚。</li>
+                <li>为潮流艺术家及爱好者创建一个结合数字和实物资产的平台。</li>
+                <li>通过社区驱动的方式，构建一个公平且透明的价值生态系统。</li>
+                <li>降低Web3的参与门槛，使更多的人能够享受到去中心化金融带来的好处。</li>
+            </ul>
+        </div>
+
+        <!-- 3. 核心创新 -->
+        <div class="section" id="section-3">
+            <h2>3. 核心创新</h2>
+
+            <h3>3.1 T-Engine（嬗变引擎）</h3>
+            <p>对比传统挖矿与Debear Party的T-Engine：</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>对比项</th>
+                        <th>传统挖矿</th>
+                        <th>Debear Party T-Engine</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>投入</td>
+                        <td>质押代币（可以取出）</td>
+                        <td>嬗变销毁（永久减少流通）</td>
+                    </tr>
+                    <tr>
+                        <td>收益</td>
+                        <td>固定APY</td>
+                        <td>4倍份额 + 逐步释放</td>
+                    </tr>
+                    <tr>
+                        <td>通缩效果</td>
+                        <td>无</td>
+                        <td>强有力的通缩</td>
+                    </tr>
+                    <tr>
+                        <td>价格支撑</td>
+                        <td>弱</td>
+                        <td>强（由于供应不断减少）</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>3.2 Pass驱动的社区激励</h3>
+            <p>持有NFT等于成为平台股东：</p>
+            <ul>
+                <li>永久挖矿的权利。</li>
+                <li>邀请推广带来收益。</li>
+                <li>未来的分红权。</li>
+                <li>DAO治理的投票权。</li>
+                <li>RWA资产的优先权。</li>
+            </ul>
+
+            <h3>3.3 动态经济模型</h3>
+            <ul>
+                <li><strong>阶段1</strong>：启动5亿DP代币。</li>
+                <li><strong>阶段2</strong>：当TVL达到一定水平后，解锁另外5亿DP。</li>
+                <li><strong>NFT挖矿</strong>：依据TVL动态调整产量。</li>
+                <li><strong>自适应平衡</strong>：生态系统会自动调节供求关系。</li>
+            </ul>
+        </div>
+
+        <!-- 4. Pass权益体系 -->
+        <div class="section" id="section-4">
+            <h2>4. Pass权益体系</h2>
+
+            <h3>4.1 三级Pass配置</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>等级</th>
+                        <th>价格</th>
+                        <th>供应量</th>
+                        <th>销售方式</th>
+                        <th>挖矿算力</th>
+                        <th>Pass销售奖励</th>
+                        <th>T-Engine加速率</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>🎫 Standard Pass</td>
+                        <td>$800</td>
+                        <td>1,300</td>
+                        <td>公开发售</td>
+                        <td>1x</td>
+                        <td>5%</td>
+                        <td>8%</td>
+                    </tr>
+                    <tr>
+                        <td>🎫 Premium Pass</td>
+                        <td>$3,000</td>
+                        <td>500</td>
+                        <td>公开发售</td>
+                        <td>3.5x</td>
+                        <td>8%</td>
+                        <td>11%</td>
+                    </tr>
+                    <tr>
+                        <td>🎫 Exclusive Pass</td>
+                        <td>$6,600</td>
+                        <td>200</td>
+                        <td>白名单制度*</td>
+                        <td>7x</td>
+                        <td>12%</td>
+                        <td>15%</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><em>注释：Exclusive Pass需要满足特定条件才能获取（具体细节将在之后公布）。</em></p>
+
+            <h3>4.2 Pass的核心权益</h3>
+            
+            <h4>永久挖矿权：</h4>
+            <ul>
+                <li>Standard Pass享有基础速度，保证稳定的产出。</li>
+                <li>Premium Pass则以3.5倍的速度运行，提供了极高的性价比。</li>
+                <li>Exclusive Pass则是以惊人的7倍速度运作，适合追求高额回报的大户玩家。</li>
+                <li>挖矿产出会随着平台TVL的变化而调整，以维持生态平衡。</li>
+            </ul>
+
+            <h4>邀请奖励权：</h4>
+            <ul>
+                <li>必须持有Pass才能获得Pass销售奖励，持有Pass可提高T-engine邀请加速释放率。</li>
+                <li>如果被邀请人购买了Pass，则可以获得其购买金额的5%/8%/12%作为BERA奖励；</li>
+                <li>如果被邀请人投入到T-Engine中，则可以获得加速释放金额的8%/11%/15%。(需要用户拥有T-engine释放份额)</li>
+            </ul>
+
+            <h4>DAO治理权：</h4>
+            <ul>
+                <li>参与平台的重大决策投票。</li>
+                <li>提出并讨论新的功能提案。</li>
+                <li>影响整个生态的发展方向。</li>
+            </ul>
+
+            <h4>未来权益：</h4>
+            <ul>
+                <li>平台手续费分红（一旦启动）。</li>
+                <li>RWA资产收益分配。</li>
+                <li>GameFi游戏专属特权。</li>
+                <li>限量潮流商品的优先购买权。</li>
+            </ul>
+        </div>
+
+        <!-- 5. DP代币经济学 -->
+        <div class="section" id="section-5">
+            <h2>5. DP代币经济学</h2>
+
+            <h3>5.1 代币基本信息</h3>
+            <table>
+                <tbody>
+                    <tr>
+                        <td><strong>代币名称</strong></td>
+                        <td>Debear Party Token</td>
+                    </tr>
+                    <tr>
+                        <td><strong>代币符号</strong></td>
+                        <td>DP</td>
+                    </tr>
+                    <tr>
+                        <td><strong>区块链</strong></td>
+                        <td>Berachain</td>
+                    </tr>
+                    <tr>
+                        <td><strong>代币标准</strong></td>
+                        <td>ERC-20</td>
+                    </tr>
+                    <tr>
+                        <td><strong>最大总量</strong></td>
+                        <td>1,000,000,000 DP (十亿)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>初始发行</strong></td>
+                        <td>500,000,000 DP (五亿)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>预留发行</strong></td>
+                        <td>500,000,000 DP (五亿，在TVL达标后解锁)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>5.2 阶段1代币分配(五亿DP)</h3>
+            <table>
+                <tbody>
+                    <tr>
+                        <td><strong>NFT挖矿</strong></td>
+                        <td>100,000,000 DP (一亿)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>T-engine挖矿</strong></td>
+                        <td>360,000,000 DP (三亿六千万)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>初始流动性</strong></td>
+                        <td>10,000,000 DP (一千万)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>社区奖励</strong></td>
+                        <td>10,000,000 DP (一千万)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>团队</strong></td>
+                        <td>8,000,000 DP (八百万) - 24个月锁定</td>
+                    </tr>
+                    <tr>
+                        <td><strong>创作艺术家</strong></td>
+                        <td>5,000,000 DP (五百万) - 24个月锁定</td>
+                    </tr>
+                    <tr>
+                        <td><strong>经济顾问</strong></td>
+                        <td>4,000,000 DP (四百万) - 24个月锁定</td>
+                    </tr>
+                    <tr>
+                        <td><strong>应急储备</strong></td>
+                        <td>3,000,000 DP (三百万)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>5.3 代币用途</h3>
+            <ul>
+                <li>使用T-Engine来销毁代币从而获得更多的挖矿份额。</li>
+                <li>进行LP流动性质押，以此来提供流动性并赚取收益。</li>
+                <li>参与DAO治理投票，共同决定生态发展的走向。</li>
+                <li>在未来的GameFi游戏中用作内部消耗及奖励发放。</li>
+                <li>购买RWA资产，即那些经过数字化处理的真实世界物品。</li>
+                <li>在平台上用于支付各种费用，如NFT市场的交易手续费等。</li>
+            </ul>
+
+            <h3>5.4 通缩机制</h3>
+            <p>DP是一种强力通缩型代币：</p>
+            <ol>
+                <li><strong>T-Engine直接销毁</strong>——所有投入都将被彻底销毁不再进入市场流通。</li>
+                <li><strong>T-engine释放销毁</strong>——T-engine矿池每天释放的DP代币，都会在释放时销毁其中的10%。</li>
+                <li><strong>游戏内消费/销毁</strong>——在即将到来的游戏活动中，DP也将作为一种消耗品出现。</li>
+            </ol>
+
+            <div class="highlight-box">
+                <p><strong>预计通缩情况：</strong></p>
+                <p>假设30%的DP参与到T-Engine中，第一年的销毁数量大约会在5百万到8百万之间，这意味着每年会有5%-8%左右的通缩率。</p>
+            </div>
+        </div>
+
+        <!-- 6. T-Engine模式 -->
+        <div class="section" id="section-6">
+            <h2>6. T-Engine模式</h2>
+
+            <h3>6.1 T-Engine是什么？</h3>
+            <p>T-Engine（嬗变引擎）代表了Debear Party的一项核心技术革新。它不同于传统的质押方式，后者通常涉及"锁定代币以换取收益，并允许随时赎回本金"。相反，T-Engine采取了一种更为激进的方法："永久地将代币转换成不可逆的形式(销毁)，同时将其转变为四倍的挖矿份额"，这种转变类似于自然界中的蜕变过程，即把普通的物质转化为了珍贵的金属。这一过程不仅象征着财富形态的根本变化，也标志着用户持有的DP代币价值得到了显著提升。</p>
+
+            <div class="highlight-box">
+                <h4><span class="emoji-icon">⚡</span>T-Engine核心优势</h4>
+                <ul>
+                    <li><strong>4倍收益倍增</strong>：投入1个DP获得4份挖矿份额</li>
+                    <li><strong>强力通缩机制</strong>：永久销毁减少流通供应</li>
+                    <li><strong>价格支撑</strong>：持续的销毁为代币价格提供强有力支撑</li>
+                    <li><strong>长期价值</strong>：逐步释放机制确保持续收益</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 7. 邀请激励系统 -->
+        <div class="section" id="section-7">
+            <h2>7. 邀请激励系统</h2>
+
+            <h3>邀请系统的生态价值</h3>
+            <ul>
+                <li><strong>自我传播的增长动力</strong>——依靠社区自身的宣传力量，有效降低了市场营销的成本。</li>
+                <li><strong>社区协作精神</strong>——每一位推广者都是这个生态不可或缺的一份子，共同塑造着它的成长轨迹。</li>
+                <li><strong>防止滥用行为</strong>——设置最低持有NFT的标准($800起)，有效地筛选出了高质量的参与者群体。</li>
+                <li><strong>积极反馈循环</strong>——每一轮成功的推广行动都会吸引更多的新人加入，进而促使更多的代币被销毁，推升市场价格上扬，最终吸引更多潜在的新用户涌入。</li>
+            </ul>
+        </div>
+
+        <!-- 8. 流动性质押 -->
+        <div class="section" id="section-8">
+            <h2>8. 流动性质押</h2>
+
+            <h3>8.1 DP-BERA LP质押 <em>(即将上线)</em></h3>
+            <p>为DP-BERA交易对提供流动性，赚取双重收益：</p>
+
+            <h4>收益来源：</h4>
+            <ol>
+                <li>DEX交易所交易产生的手续费分成（占总手续费的0.3%）。</li>
+                <li>Berachain上独有的PoL（Proof of Liquidity）机制，团队将在合适时机申请PoL奖励金库白名单。使所有的LP提供者获得更高的收益。</li>
+            </ol>
+
+            <h3>8.2 提供流动性的原因</h3>
+            <ul>
+                <li><strong>支持生态发展</strong>——流动性越高，市场价格就越稳定。</li>
+                <li><strong>获取高收益率</strong>——除了常规的APY外还有额外的手续费分成。</li>
+                <li><strong>极高的灵活性</strong>——可以根据个人需求随时退出流动性池。</li>
+                <li><strong>初期的优势</strong>——因为初期流动性较少所以APY相对较高。</li>
+                <li><strong>随机空投福利</strong>——对于做出突出贡献的项目支持者偶尔送出惊喜礼物。</li>
+            </ul>
+        </div>
+
+        <!-- 9. 生态发展规划 -->
+        <div class="section" id="section-9">
+            <h2>9. 生态发展规划</h2>
+
+            <h3>9.1 阶段1：启动与社区建设 (Q2-Q3 2025)</h3>
+            <h4>目标：</h4>
+            <p>奠定坚实的基础社区，并开启NFT销售活动。</p>
+
+            <h4>完成以下任务：</h4>
+            <ul>
+                <li><strong>Pass销售</strong>：公开售卖Standard Pass & Premium Pass，同时针对符合条件的用户实行Exclusive Pass白名单销售策略；同步激活邀请系统促进自然增长。</li>
+                <li><strong>代币上线</strong>：设立初始流动性池(DP-BERA)，并在DEX平台上架以便交易流通。</li>
+                <li><strong>核心功能上线</strong>：正式启动NFT挖矿功能，全面开放T-Engine挖矿功能。</li>
+                <li><strong>社区建设</strong>：积极运营官方社交媒体账号，维护Telegram社群活跃度，并策划一系列社区激励活动激发成员热情。</li>
+            </ul>
+
+            <h4>预期达成里程碑：</h4>
+            <ul>
+                <li>成功售罄全部2,000个Pass。</li>
+                <li>拥有一千以上的积极参与者构成强大社区基础。</li>
+                <li>总锁仓价值(TVL)突破五百万美元大关。</li>
+            </ul>
+
+            <h3>9.2 阶段2：生态扩展 (Q4 2025 – Q1 2026)</h3>
+            <h4>目标：</h4>
+            <p>进一步丰富产品种类和服务范围，强化整体生态价值。</p>
+
+            <h4>实施举措：</h4>
+            <ul>
+                <li><strong>GameFi游戏上线</strong>：引入社交属性浓厚的游戏体验，并设计合理的DP消耗机制配合丰富的游戏奖励池刺激玩家积极性。</li>
+                <li><strong>DAO治理启动</strong>：建立健全的提案提交渠道、公正透明的投票规则以及高效的社区金库管理体系保障全体成员利益最大化。</li>
+                <li><strong>RWA资产模块开发</strong>：推进潮流商品数字化进程，涵盖限量版球鞋、知名潮牌服饰乃至独家俱乐部会员资格等多种稀缺资源，并打通线上虚拟身份与线下实体资产之间的兑换通道。</li>
+            </ul>
+
+            <h4>期望成就里程碑：</h4>
+            <ul>
+                <li>总锁仓价值(TVL)攀升至两千万美元高位。</li>
+                <li>每月活跃用户数量突破五千人大关。</li>
+                <li>至少一种RWA资产成功登陆平台接受交易。</li>
+            </ul>
+        </div>
+
+        <!-- 10. 团队与合作 -->
+        <div class="section" id="section-10">
+            <h2>10. 团队与合作伙伴</h2>
+
+            <h3>10.1 团队愿景</h3>
+            <p>Debear Party团队汇聚了一批来自Web3技术前沿的技术专家、深入研究DeFi领域的学者、富有创造力的游戏设计师以及热衷于潮流文化的爱好者们。我们坚信，"Web3不仅是技术创新的进步阶梯，更是重新定义价值分配格局的社会变革。"正是这份信念引领着我们不懈努力，致力于创造一个能够让每位参与者共享生态成长硕果的美好愿景。</p>
+
+            <h3>10.2 合作伙伴 <em>(正在筹划之中)</em></h3>
+            <p>我们将寻求与多方建立紧密的合作关系：</p>
+            <ul>
+                <li><strong>Berachain官方机构</strong>——期待得到他们在技术支持和生态资源整合方面的鼎力相助；</li>
+                <li><strong>DeFi协议提供商</strong>——希望通过深度整合彼此的产品和服务来共同优化流动性管理和提高投资回报效率；</li>
+                <li><strong>游戏开发商</strong>——希望能在GameFi内容创作方面展开密切交流与合作；</li>
+                <li><strong>潮流品牌商</strong>——计划联手开拓RWA资产市场的新蓝海；</li>
+                <li><strong>安全审计公司</strong>——将聘请专业的安全审计公司为我们智能合约的安全保驾护航。</li>
+            </ul>
+        </div>
+
+        <!-- 11. 风险提示 -->
+        <div class="section" id="section-11">
+            <h2>11. 风险提示</h2>
+
+            <div class="warning-box">
+                <h3>⚠️ 重要声明</h3>
+                <p>投资加密货币和参与DeFi项目具有高风险。请在充分了解风险的情况下谨慎决策，仅投入您能够承受损失的资金。</p>
+            </div>
+
+            <h3>11.1 市场风险</h3>
+            <ul>
+                <li>加密货币的价格波动可能会非常剧烈，无论是DP还是BERA都有可能出现大幅度的价格变动。</li>
+                <li>在项目的早期阶段可能存在流动性不足的问题，这可能会影响交易的顺畅性和价格发现的过程。</li>
+                <li>不同国家和地区对于区块链和加密货币行业的监管态度各不相同，这些政策上的不确定性也可能给项目带来一定的挑战。</li>
+            </ul>
+
+            <h3>11.2 技术风险</h3>
+            <ul>
+                <li>尽管我们的智能合约已经过严格的审核程序，但仍有可能存在未被发现的安全漏洞。</li>
+                <li>Berachain网络本身作为一个新兴公链基础设施，其稳定性和性能表现也需要密切关注。</li>
+                <li>虽然我们已采取了一系列防护措施来抵御黑客攻击的风险，但在高度互联且复杂的互联网环境中，始终存在着遭受恶意入侵的可能性。</li>
+            </ul>
+
+            <h3>11.3 项目风险</h3>
+            <ul>
+                <li>本项目的顺利实施取决于团队的专业能力和执行力。</li>
+                <li>市场上同类产品的竞争态势也不容忽视，它们可能会对我们用户的吸引力造成一定程度的影响。</li>
+                <li>若未能如期达到预定的目标值TVL，则可能会影响到下一阶段代币解冻的时间表安排。</li>
+            </ul>
+
+            <h3>11.4 投资建议</h3>
+            <div class="highlight-box">
+                <p><strong>郑重提醒各位投资者注意以下几点事项：</strong></p>
+                <ul>
+                    <li>只应投入自己能够承担相应财务后果的资金来进行投资操作；</li>
+                    <li>务必要充分了解相关机制原理后再做任何实质性的参与动作；</li>
+                    <li>切勿轻信所谓的超高收益承诺，请始终保持清醒头脑理智对待每一笔投资决策；</li>
+                    <li>定期跟踪观察所投资项目最新进展情况以便及时作出合理判断；</li>
+                    <li>分散自己的投资组合有助于有效降低单一投资品种所带来的潜在风险暴露程度。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 结语 -->
+        <div class="section">
+            <h2>为何要选择Debear Party？</h2>
+            
+            <div class="highlight-box">
+                <h3>理由如下：</h3>
+                <ul>
+                    <li><strong>强大的通缩模型</strong>——T-Engine将持续削减市场上的可用供应量；</li>
+                    <li><strong>多种收入途径</strong>——通过挖矿、质押甚至邀请他人加入等方式获得丰厚回报；</li>
+                    <li><strong>社区的力量</strong>——邀请奖励计划加上DAO治理结构确保每个人的声音都被听见；</li>
+                    <li><strong>独一无二的T-Engine</strong>——打破了传统经济框架；</li>
+                    <li><strong>长远发展空间</strong>——DeFi、GameFi以及RWA综合生态所提供的广阔前景；</li>
+                    <li><strong>透明可信</strong>——智能合约严格执行代码规定杜绝人为干预可能性。</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin: 50px 0;">
+                <h3 style="font-size: 32px; margin-bottom: 20px;">🎉 现在就加入我们吧！</h3>
+                <p style="font-size: 18px; color: var(--text-secondary); margin-bottom: 30px;">
+                    一起见证每一个小小的参与如何汇集成一股股推动价值上升的强大洪流！
+                </p>
+                <a href="index.html" class="back-btn" style="display: inline-block; padding: 16px 40px; font-size: 18px;">立即体验</a>
+            </div>
+
+            <div style="text-align: center; margin-top: 60px; padding: 30px; background: rgba(0, 212, 255, 0.05); border-radius: 15px;">
+                <h4 style="margin-bottom: 20px; color: var(--neon-cyan);">🌐 官方链接</h4>
+                <p style="color: var(--text-secondary); line-height: 2;">
+                    <strong>官网：</strong> <a href="https://debear.party" target="_blank" style="color: var(--neon-cyan); text-decoration: none;">debear.party</a><br>
+                    <strong>Twitter：</strong> <a href="https://x.com/DebearParty" target="_blank" style="color: var(--neon-cyan); text-decoration: none;">@DebearParty</a><br>
+                    <strong>Telegram：</strong> 待定
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px; font-size: 24px; font-weight: 700; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                Debear Party —— 让您的每一次参与都成为通往价值增长之路的重要一步。
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>© 2025 Debear Party. All rights reserved. Built on Berachain.</p>
+    </div>
+
+    <script src="js/libs/particles.min.js"></script>
+    
+    <!-- 国际化配置 -->
+    <script src="js/i18n.js"></script>
+    
+    <!-- 公共脚本 -->
+    <script src="js/common.js"></script>
+    
+    <script>
+        // 粒子背景
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: ['#00d4ff', '#ff00ff'] },
+                shape: { type: 'circle' },
+                opacity: { value: 0.5, random: true },
+                size: { value: 3, random: true },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#00d4ff',
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 1,
+                    direction: 'none',
+                    random: true
+                }
+            }
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

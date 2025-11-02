@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T-Engine - Debear Party</title>
+    <script src="js/libs/ethers-5.7.2.umd.min.js"></script>
+    <style>
+        /* ========== 全局样式 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* 优化颜色系统 */
+            --primary-gradient: linear-gradient(135deg, #00c4ef 0%, #e900e9 100%);
+            --secondary-gradient: linear-gradient(135deg, #4dd0e1 0%, #d91e5a 100%);
+            --neon-cyan: #00c4ef;
+            --neon-pink: #e900e9;
+            --neon-magenta: #d91e5a;
+            --dark-bg: #0a0e1a;
+            --dark-surface: #1a0a2e;
+            --dark-purple: #2d1b4e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0b1d4;
+            --grid-color: rgba(0, 196, 239, 0.12);
+            
+            /* z-index 层级 */
+            --z-background: -1;
+            --z-navbar: 100;
+            --z-mobile-menu-overlay: 110;
+            --z-mobile-menu: 120;
+            --z-hamburger: 130;
+            --z-toast: 200;
+            --z-modal: 300;
+            
+            /* 间距系统 */
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 24px;
+            --spacing-lg: 32px;
+            --spacing-xl: 40px;
+            --spacing-2xl: 48px;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* ========== 粒子背景 ========== */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background: 
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                radial-gradient(ellipse at top, #2d1b4e 0%, #1a0a2e 50%, #0a0e1a 100%);
+            background-size: 50px 50px, 50px 50px, 100% 100%;
+            background-position: 0 0, 0 0, center center;
+        }
+
+        #particles-js::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 212, 255, 0.03) 0px,
+                transparent 2px,
+                transparent 4px
+            );
+            pointer-events: none;
+            animation: scan 8s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(50px); }
+        }
+
+        /* ========== 导航栏 ========== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: var(--z-navbar);
+            padding: var(--spacing-md) 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 14, 26, 0.5);
+            backdrop-filter: blur(20px);
+            border-bottom: 2px solid rgba(0, 196, 239, 0.2);
+            box-shadow: 0 4px 24px rgba(0, 196, 239, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        /* 导航菜单 */
+        .nav-menu {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+            padding: 8px 0;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 8px rgba(0, 196, 239, 0.6);
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+            transition: width 0.3s;
+        }
+
+        .nav-menu a:hover::after,
+        .nav-menu a.active::after {
+            width: 100%;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* 语言切换器 */
+        .lang-switcher {
+            position: relative;
+            margin-right: var(--spacing-sm);
+        }
+        
+        .lang-btn {
+            padding: 8px 16px;
+            background: rgba(0, 196, 239, 0.1);
+            border: 2px solid rgba(0, 196, 239, 0.3);
+            border-radius: 20px;
+            color: var(--neon-cyan);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            min-width: 50px;
+        }
+        
+        .lang-btn:hover {
+            background: rgba(0, 196, 239, 0.2);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 12px rgba(0, 196, 239, 0.4);
+        }
+        
+        .lang-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 196, 239, 0.3);
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 140px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 1000;
+            box-shadow: 0 8px 24px rgba(0, 196, 239, 0.2);
+        }
+        
+        .lang-switcher:hover .lang-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .lang-option {
+            padding: 10px 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .lang-option:hover {
+            background: rgba(0, 196, 239, 0.15);
+            color: var(--neon-cyan);
+        }
+        
+        .lang-option.active {
+            background: rgba(0, 196, 239, 0.1);
+            color: var(--neon-cyan);
+        }
+
+        .nav-back, .mobile-back {
+            padding: 10px 25px;
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 20px;
+            color: var(--neon-cyan);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-back:hover, .mobile-back:hover {
+            background: var(--neon-cyan);
+            color: white;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .mobile-back {
+            display: none;
+            font-size: 20px;
+        }
+
+        .connect-btn {
+            padding: 12px 30px;
+            background: var(--primary-gradient);
+            border: 2px solid transparent;
+            border-radius: 25px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.7);
+        }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: var(--spacing-xs);
+            z-index: var(--z-hamburger);
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+
+        /* ========== 移动端菜单 ========== */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: var(--z-mobile-menu-overlay);
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            height: 100vh;
+            background: rgba(10, 14, 26, 0.98);
+            backdrop-filter: blur(20px);
+            border-left: 2px solid rgba(0, 196, 239, 0.3);
+            box-shadow: -4px 0 24px rgba(0, 196, 239, 0.2);
+            padding: var(--spacing-3xl) var(--spacing-lg) var(--spacing-lg);
+            transition: right 0.4s ease;
+            z-index: var(--z-mobile-menu);
+            overflow-y: auto;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-nav-links {
+            list-style: none;
+        }
+
+        .mobile-nav-links li {
+            margin: 20px 0;
+        }
+
+        .mobile-nav-links a, .mobile-nav-links button {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 600;
+            display: block;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+            transition: all 0.3s;
+            background: transparent;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .mobile-nav-links a:hover,
+        .mobile-nav-links a.active,
+        .mobile-nav-links button:hover {
+            color: var(--neon-cyan);
+            padding-left: 10px;
+        }
+
+        .mobile-connect-btn {
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        /* ========== 主容器 ========== */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 120px 5% 80px;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .page-title h1 {
+            font-size: 56px;
+            font-weight: 900;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.4));
+        }
+
+        .page-title p {
+            font-size: 20px;
+            color: var(--text-secondary);
+        }
+
+        /* ========== 选项卡 ========== */
+        .tabs {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 15px 40px;
+            background: transparent;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 25px;
+            color: var(--text-secondary);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .tab-btn.active {
+            background: var(--primary-gradient);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 4px 30px rgba(0, 212, 255, 0.5);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ========== 介绍区域 ========== */
+        .intro-section {
+            max-width: 1000px;
+            margin: 0 auto 60px;
+        }
+
+        .intro-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(255, 0, 255, 0.08) 100%);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 25px;
+            padding: 40px;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+
+        .intro-card:hover {
+            border-color: var(--neon-pink);
+            box-shadow: 0 20px 60px rgba(255, 0, 255, 0.3);
+        }
+
+        .intro-card h2 {
+            font-size: 32px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .intro-card p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .feature-item {
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s;
+        }
+
+        .feature-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--neon-cyan);
+            transform: translateY(-5px);
+        }
+
+        .feature-item .icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .feature-item h3 {
+            font-size: 20px;
+            color: var(--neon-cyan);
+            margin-bottom: 10px;
+        }
+
+        .feature-item p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* ========== 挖矿区域 ========== */
+        .mining-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .mining-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(255, 0, 255, 0.08) 100%);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 25px;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        .mining-card h3 {
+            font-size: 28px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 25px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+
+        .alert.info {
+            background: rgba(0, 212, 255, 0.15);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            color: var(--neon-cyan);
+        }
+
+        .alert.success {
+            background: rgba(0, 255, 136, 0.15);
+            border: 2px solid rgba(0, 255, 136, 0.5);
+            color: #00ff88;
+        }
+
+        .alert.error {
+            background: rgba(255, 0, 100, 0.15);
+            border: 2px solid rgba(255, 0, 100, 0.5);
+            color: #ff0064;
+        }
+
+        .reward-box {
+            background: var(--primary-gradient);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        .reward-amount {
+            font-size: 48px;
+            font-weight: 900;
+            margin: 10px 0;
+        }
+
+        .reward-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .input-group {
+            margin: 25px 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.05);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .stat:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: white;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary-gradient);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4);
+            margin-bottom: 15px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 212, 255, 0.6);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+
+        .btn-secondary:hover {
+            background: var(--neon-cyan);
+            color: white;
+        }
+
+        /* ========== 消息提示 ========== */
+        #message {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9998;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        /* ========== 邀请人弹窗样式 ========== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(255, 0, 255, 0.1) 100%);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.3);
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal h3 {
+            font-size: 28px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal p {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 212, 255, 0.05);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-btn-primary {
+            background: var(--primary-gradient);
+            border: 2px solid transparent;
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.5);
+        }
+
+        .modal-btn-secondary {
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+
+        .modal-btn-secondary:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 768px) {
+            .page-title h1 { font-size: 36px; }
+            .nav-menu { display: none; }
+            .lang-switcher { display: none; }
+            .navbar .connect-btn { display: none; }
+            .hamburger { display: flex; }
+            .mobile-connect-btn { display: block; }
+            .mining-card { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <a href="index.html" class="logo">🐻 Debear Party</a>
+        <ul class="nav-menu">
+            <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+            <li><a href="swap.html" data-i18n="nav.swap">Swap</a></li>
+            <li><a href="pass-nft.html" data-i18n="nav.pass">Pass NFT</a></li>
+            <li><a href="t-engine.html" class="active" data-i18n="nav.tengine">T-Engine</a></li>
+            <li><a href="gamefi.html" data-i18n="nav.gamefi">GameFi</a></li>
+        </ul>
+        <div class="nav-buttons">
+            <!-- 语言切换器 -->
+            <div class="lang-switcher">
+                <button class="lang-btn">EN</button>
+                <div class="lang-dropdown">
+                    <div class="lang-option active" data-lang="en" onclick="window.i18n?.setLanguage('en')">
+                        <span data-i18n="lang.en">English</span>
+                    </div>
+                    <div class="lang-option" data-lang="zh-TW" onclick="window.i18n?.setLanguage('zh-TW')">
+                        <span data-i18n="lang.zh">繁體中文</span>
+                    </div>
+                </div>
+            </div>
+            <button class="connect-btn" id="connectBtn" onclick="connectWallet()" data-i18n="nav.connect">Connect Wallet</button>
+            <button class="hamburger" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 消息提示框 -->
+    <div id="message"></div>
+
+    <!-- 移动端菜单遮罩 -->
+    <div class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+    
+    <!-- 邀请弹窗遮罩层 (不要添加 onclick,避免误触) -->
+
+    <!-- 移动端侧边栏菜单 -->
+    <div class="mobile-menu">
+        <ul class="mobile-nav-links">
+            <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+            <li><a href="swap.html" data-i18n="nav.swap">Swap</a></li>
+            <li><a href="pass-nft.html" data-i18n="nav.pass">Pass NFT</a></li>
+            <li><a href="t-engine.html" class="active" data-i18n="nav.tengine">T-Engine</a></li>
+            <li><a href="gamefi.html" data-i18n="nav.gamefi">GameFi</a></li>
+        </ul>
+        <!-- 移动端语言选择 -->
+        <div style="margin-top: 20px; padding: 10px 0; border-top: 1px solid rgba(0, 212, 255, 0.2);">
+            <div class="lang-option" style="padding: 12px; cursor: pointer;" data-lang="en" onclick="window.i18n?.setLanguage('en')">
+                <span data-i18n="lang.en">English</span>
+            </div>
+            <div class="lang-option" style="padding: 12px; cursor: pointer;" data-lang="zh-TW" onclick="window.i18n?.setLanguage('zh-TW')">
+                <span data-i18n="lang.zh">繁體中文</span>
+            </div>
+        </div>
+        <button class="connect-btn mobile-connect-btn" onclick="connectWallet()" data-i18n="nav.connect">Connect Wallet</button>
+    </div>
+
+    <!-- 邀请人弹窗 -->
+    <div class="modal-overlay" id="inviteModal" onclick="event.target === this && closeInviteModal(false)">
+        <div class="modal">
+            <h3 data-i18n="pass.inviteTitle">🎁 Enter Referrer Address</h3>
+            <p data-i18n="pass.inviteDesc">You are detected as a new user. Please enter referrer address to get rewards, or skip to use default referrer.</p>
+            <input type="text" class="modal-input" id="modalInviterInput" data-i18n-attr="placeholder" data-i18n="tengine.modalPlaceholder" placeholder="0x... (optional)">
+            <div class="modal-buttons">
+                <button class="modal-btn-secondary" onclick="closeInviteModal(true)" data-i18n="pass.skip">Skip</button>
+                <button class="modal-btn-primary" onclick="confirmInviter()" data-i18n="pass.confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容 -->
+    <div class="container">
+        <div class="page-title">
+            <h1 data-i18n="tengine.title">⚙️ T-Engine</h1>
+            <p data-i18n="tengine.subtitle">T-Engine System - Continuously Earn DP Token Rewards</p>
+        </div>
+
+        <!-- 1. T-Engine 质押挖矿（整合窗口） -->
+        <div class="mining-container">
+            <div class="mining-card" style="position: relative;">
+                <!-- 倒计时置右上角 -->
+                <div style="position: absolute; top: 20px; right: 20px; padding: 10px 20px; background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3); border-radius: 12px; text-align: center;">
+                    <div style="color: var(--text-secondary); font-size: 12px; margin-bottom: 4px;" data-i18n="tengine.nextRelease">📅️ Next Release</div>
+                    <div id="tengineNextRelease" style="font-size: 18px; font-weight: 700; color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);">--:--:--</div>
+                </div>
+                
+                <h3>⚚️ T-Engine</h3>
+                
+                <!-- 奖励显示区域 -->
+                <div class="reward-box" style="margin-bottom: 20px;">
+                    <div class="reward-label" data-i18n="tengine.pendingReward">Pending Rewards</div>
+                    <div class="reward-amount" id="pendingReward">0.0000</div>
+                    <div class="reward-label">DP Token</div>
+                </div>
+                
+                <button class="btn-primary" onclick="claimReward()" style="margin-bottom: 25px;" data-i18n="tengine.claimReward">Claim Reward</button>
+                
+                <!-- 挖矿数据 -->
+                <div style="margin: 25px 0;">
+                    <div class="stat">
+                        <span class="stat-label" data-i18n="tengine.totalStake">Total Network Stake:</span>
+                        <span class="stat-value" id="totalStake">0 DP</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label" data-i18n="tengine.myRemaining">My Remaining Shares:</span>
+                        <span class="stat-value" id="myRemaining">0 DP</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label" data-i18n="tengine.myStake">My Stake:</span>
+                        <span class="stat-value" id="myStake">0 DP</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label" data-i18n="tengine.totalClaimed">Total Claimed:</span>
+                        <span class="stat-value" id="totalClaimed">0 DP</span>
+                    </div>
+                </div>
+                
+                <!-- 分隔线 -->
+                <div style="border-top: 2px solid rgba(0, 212, 255, 0.2); margin: 25px 0;"></div>
+                
+                <!-- 质押区域 -->
+                <div class="input-group">
+                    <label style="display: flex; justify-content: space-between; align-items: center;">
+                        <span data-i18n="tengine.stakeAmount">Stake Amount (DP Token)</span>
+                        <span style="color: var(--neon-cyan); font-size: 14px;"><span data-i18n="tengine.balance">Balance:</span> <span id="userDPBalance">0.00</span> DP</span>
+                    </label>
+                    <div style="position: relative;">
+                        <input type="text" id="stakeAmount" data-i18n-attr="placeholder" data-i18n="tengine.inputPlaceholder" placeholder="Enter stake amount" style="padding-right: 70px;">
+                        <button onclick="setMaxAmount()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); padding: 6px 15px; background: var(--neon-cyan); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.3s;">MAX</button>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="stake()" data-i18n="tengine.stake">Stake</button>
+            </div>
+            
+            <!-- 邀请收益卡片 -->
+            <div class="mining-card" style="margin-top: 20px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.08) 0%, rgba(255, 140, 0, 0.08) 100%); border-color: rgba(255, 215, 0, 0.3);">
+                <h3 style="color: #ffd700;" data-i18n="tengine.inviteTitle">🎁 My Referral Rewards</h3>
+                
+                <div class="alert info" style="background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.3); color: #ffd700;" data-i18n="tengine.inviteInfo">
+                    💡 Invite users to stake and earn rewards: No Pass 3% | Standard Pass 8% | Premium Pass 11% | Exclusive Pass 15%
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <div class="stat">
+                        <span class="stat-label" data-i18n="tengine.passLevel">Pass Level:</span>
+                        <span class="stat-value" id="myPassLevel" style="color: #ffd700;">--</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label" data-i18n="tengine.rewardRate">Current Reward Rate:</span>
+                        <span class="stat-value" id="myRewardRate" style="color: #ffd700;">--</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label" data-i18n="tengine.myReferrals">👥 My Referrals:</span>
+                        <span class="stat-value" id="myReferralCount" style="color: #ffd700;">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 什么是 T-Engine -->
+        <div class="intro-section">
+            <div class="intro-card">
+                <h2 data-i18n="tengine.whatIs">🚀 What is T-Engine?</h2>
+                <p data-i18n="tengine.intro1">
+                    T-Engine is the core mining engine of the Debear Party ecosystem. By staking DP Tokens, users can start T-Engine for continuous mining and earn generous DP Token rewards.
+                </p>
+                <p data-i18n="tengine.intro2">
+                    T-Engine releases 0.3% of remaining shares daily, ensuring fair distribution and sustainable development. Whether you stake small or large amounts, you can earn corresponding returns.
+                </p>
+            </div>
+        </div>
+
+        <!-- 3. 如何使用 -->
+        <div class="intro-section">
+            <div class="intro-card">
+                <h2 data-i18n="tengine.howTo">🔄 How to Use?</h2>
+                <ol style="color: var(--text-secondary); margin-left: 20px; line-height: 2;">
+                    <li data-i18n="tengine.step1"><strong>Connect Wallet:</strong> Make sure you have enough DP Tokens in your wallet</li>
+                    <li data-i18n="tengine.step2"><strong>Stake Tokens:</strong> Enter stake amount and click "Stake" button</li>
+                    <li data-i18n="tengine.step3"><strong>Start Mining:</strong> After successful staking, T-Engine starts automatically</li>
+                    <li data-i18n="tengine.step4"><strong>Claim Rewards:</strong> You can claim 0.3% of remaining shares daily, with 10% tax on claims</li>
+                    <li data-i18n="tengine.step5"><strong>Continuous Earnings:</strong> Regularly claim rewards and reinvest for higher returns</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- 4. 注意事项 -->
+        <div class="intro-section">
+            <div class="intro-card">
+                <h2 data-i18n="tengine.notice">⚠️ Notice</h2>
+                <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 2;">
+                    <li data-i18n="tengine.notice1">Staking requires a small amount of Gas fee (BERA)</li>
+                    <li data-i18n="tengine.notice2">T-Engine does not support withdrawing stakes, only claiming daily released rewards</li>
+                    <li data-i18n="tengine.notice3">Holding Pass NFT grants mining power bonus (Coming Soon)</li>
+                    <li data-i18n="tengine.notice4">Smart contracts have been audited, but please invest cautiously</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 粒子效果库 (本地化) -->
+    <script src="js/libs/particles.min.js"></script>
+    
+    <!-- 国际化配置 -->
+    <script src="js/i18n.js"></script>
+    
+    <script>
+        // ========== 粒子背景配置 ==========
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: ['#00d4ff', '#ff00ff'] },
+                shape: { type: 'circle' },
+                opacity: { value: 0.6, random: true },
+                size: { value: 3, random: true },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#00d4ff',
+                    opacity: 0.3,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 1.5,
+                    direction: 'none',
+                    random: true
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: { enable: true, mode: 'grab' },
+                    onclick: { enable: true, mode: 'push' }
+                }
+            }
+        });
+
+        // ========== 合约配置 ==========
+        const CONTRACTS = {
+            tEngine: '0xd9661D56659B80A875E42A51955434A0818581D8',
+            dpToken: '0xf7C464c7832e59855aa245Ecc7677f54B3460e7d',
+            debearPass: '0x29f2a6756E5B79C36Eb6699220CB56f7749C7514',
+            invitationSystem: '0xAa733E91132dF624f391f1B426F56BD231486774'
+        };
+
+        // T-Engine ABI (V5 - 包含强制释放功能)
+        const TENGINE_ABI = [
+            'function enterPool(uint256 amount, address inviter)',
+            'function claim()',
+            'function userInfo(address) view returns (uint256 totalShares, uint256 claimedShares, uint256 lastClaimEpoch, uint256 pendingRewards)',
+            'function totalDeposited() view returns (uint256)',
+            'function totalClaimed() view returns (uint256)',
+            'function deployTime() view returns (uint256)',
+            'function getCurrentEpoch() view returns (uint256)',
+            'function getCurrentDay() view returns (uint256)',
+            'function calculateClaimable(address user) view returns (uint256)',
+            'function getInviterRewardRate(address inviter) view returns (uint256)',
+            'function getInviterAvailableShares(address inviter) view returns (uint256)',
+            'function epochDuration() view returns (uint256)',
+            'function releaseDayDuration() view returns (uint256)',
+            'function manualEpochOffset() view returns (uint256)',
+            'function manualDayOffset() view returns (uint256)',
+            'function lastEpochDurationChangeTime() view returns (uint256)',
+            'function lastEpochDurationChangeEpoch() view returns (uint256)',
+            'function previousEpochDuration() view returns (uint256)',
+            // V5 新增函数
+            'function getPendingRewards(address user) view returns (uint256)',
+            'function getRemainingShares(address user) view returns (uint256)',
+            'function globalForceReleaseCount() view returns (uint256)',
+            'function userProcessedForceReleases(address) view returns (uint256)',
+            'function userInviteRewardsReceived(address) view returns (uint256)',
+            'function userInviteRewardsGiven(address) view returns (uint256)',
+            'event InviteRewardReleased(address indexed inviter, address indexed newUser, uint256 actualReward, uint256 expectedReward)',
+            'event GlobalForceReleaseTriggered(uint256 releaseCount, uint256 timestamp)'
+        ];
+        
+        // Pass NFT ABI (ERC1155)
+        const PASS_ABI = [
+            'function balanceOf(address account, uint256 id) view returns (uint256)'
+        ];
+
+        const INVITATION_ABI = [
+            'function getInviter(address) view returns (address)',
+            'function bindInviter(address user, address inviter) external',
+            'function hasPass(address user) view returns (bool)'
+        ];
+
+        const TOKEN_ABI = [
+            'function approve(address spender, uint256 amount) external returns (bool)',
+            'function balanceOf(address account) external view returns (uint256)',
+            'function allowance(address owner, address spender) external view returns (uint256)'
+        ];
+
+        const INVITATION_SYSTEM = '0xAa733E91132dF624f391f1B426F56BD231486774';
+        const DEFAULT_INVITER = '0xfcbd23bdd16f0e10437ef26b4df3afb12e75a05d';
+
+        let provider, signer, userAddress;
+        let updateInterval, tengineCountdownInterval;
+        let userDPBalance = '0';
+        let userInviter = null;
+        let pendingStakeAmount = null;
+        let autoRefreshEnabled = false; // 默认关闭自动刷新
+
+        // ========== 连接钱包 ==========
+        async function connectWallet() {
+            try {
+                const walletProvider = window.okxwallet || window.ethereum;
+                if (!walletProvider) {
+                    showMessage(window.i18n?.t('toast.wallet.noProvider') || 'Please install MetaMask or OKX Wallet', 'error');
+                    return;
+                }
+
+                await walletProvider.request({ method: 'eth_requestAccounts' });
+                
+                const chainId = await walletProvider.request({ method: 'eth_chainId' });
+                if (chainId !== '0x138de') {
+                    await walletProvider.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0x138de' }]
+                    });
+                }
+
+                provider = new ethers.providers.Web3Provider(walletProvider);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+
+                const shortAddr = userAddress.substring(0, 6) + '...' + userAddress.substring(38);
+                document.getElementById('connectBtn').textContent = shortAddr;
+                
+                // 保存连接状态
+                localStorage.setItem('walletConnected', 'true');
+                localStorage.setItem('walletAddress', userAddress);
+                
+                // 检查邀请关系
+                await checkInviter();
+                
+                await refreshData();
+                await refreshDPBalance();
+                
+                // 尝试刷新邀请信息（可能失败）
+                try {
+                    await refreshInviteInfo();
+                } catch (err) {
+                    console.warn('刷新邀请信息失败:', err.message);
+                }
+                
+                // 不再启动自动刷新，改为按需刷新
+                // startRealtimeUpdate();
+                
+                // 尝试设置事件监听（可能失败）
+                try {
+                    setupEventListeners();
+                } catch (err) {
+                    console.warn('设置事件监听失败:', err.message);
+                }
+                
+                showMessage(window.i18n?.t('tengine.msg.walletConnected') || 'Wallet connected successfully!', 'success');
+            } catch (error) {
+                const failMsg = window.i18n?.t('tengine.msg.walletFailed') || 'Failed to connect wallet: ';
+                showMessage(failMsg + error.message, 'error');
+            }
+        }
+
+        // 检查并恢复钱包连接
+        async function checkWalletConnection() {
+            const wasConnected = localStorage.getItem('walletConnected');
+            if (!wasConnected) return;
+
+            try {
+                const walletProvider = window.okxwallet || window.ethereum;
+                if (!walletProvider) return;
+
+                // 先检查网络
+                const chainId = await walletProvider.request({ method: 'eth_chainId' });
+                if (chainId !== '0x138de') {
+                    console.log('Wrong network, need to switch to Berachain');
+                    localStorage.removeItem('walletConnected');
+                    localStorage.removeItem('walletAddress');
+                    return;
+                }
+
+                const accounts = await walletProvider.request({ method: 'eth_accounts' });
+                if (accounts && accounts.length > 0) {
+                    provider = new ethers.providers.Web3Provider(walletProvider, 'any');
+                    signer = provider.getSigner();
+                    userAddress = await signer.getAddress();
+
+                    const shortAddr = userAddress.substring(0, 6) + '...' + userAddress.substring(38);
+                    document.getElementById('connectBtn').textContent = shortAddr;
+
+                    localStorage.setItem('walletAddress', userAddress);
+
+                await checkInviter();
+                await refreshData();
+                await refreshDPBalance();
+                await refreshInviteInfo(); // 初始化邀请信息
+                // 不启动自动刷新
+                } else {
+                    localStorage.removeItem('walletConnected');
+                    localStorage.removeItem('walletAddress');
+                }
+            } catch (error) {
+                console.error('Error checking wallet connection:', error);
+                localStorage.removeItem('walletConnected');
+                localStorage.removeItem('walletAddress');
+            }
+        }
+
+        // 页面加载时检查钱包连接
+        window.addEventListener('load', () => {
+            checkWalletConnection();
+        });
+
+        // ========== 检查邀请关系 ==========
+        async function checkInviter() {
+            try {
+                // 从 InvitationSystem 合约读取链上邀请关系
+                const invitation = new ethers.Contract(INVITATION_SYSTEM, INVITATION_ABI, provider);
+                const inviter = await invitation.getInviter(userAddress);
+                
+                if (inviter === ethers.constants.AddressZero) {
+                    // 新用户，标记为零地址（后续由用户选择邀请人）
+                    userInviter = ethers.constants.AddressZero;
+                    console.log('🆕 新用户，等待绑定邀请人');
+                } else {
+                    // 已有邀请人
+                    userInviter = inviter;
+                    console.log('👥 已有邀请人:', userInviter);
+                }
+            } catch (error) {
+                console.error('检查邀请关系失败:', error);
+                userInviter = ethers.constants.AddressZero;
+            }
+        }
+
+        // ========== 进入矿池 ==========
+        async function stake() {
+            if (!signer) {
+                showMessage(window.i18n?.t('tengine.msg.noWallet') || 'Please connect wallet first', 'error');
+                return;
+            }
+
+            const amount = document.getElementById('stakeAmount').value;
+            if (!amount || parseFloat(amount) <= 0) {
+                showMessage(window.i18n?.t('tengine.msg.invalidAmount') || 'Please enter valid stake amount', 'error');
+                return;
+            }
+
+            // 重新检查邀请关系
+            await checkInviter();
+            console.log('👥 当前 userInviter:', userInviter);
+            console.log('👥 DEFAULT_INVITER:', DEFAULT_INVITER);
+            
+            // 检查是否是新用户（链上没有邀请人）
+            if (userInviter === ethers.constants.AddressZero) {
+                console.log('ℹ️ 新用户，显示邀请人弹窗');
+                // 显示弹窗让用户输入邀请人
+                pendingStakeAmount = amount;
+                showInviteModal();
+                return;
+            }
+
+            console.log('✅ 已有邀请人，直接质押');
+            // 执行质押
+            await executeStake(amount, userInviter);
+        }
+
+        // ========== 执行质押 ==========
+        async function executeStake(amount, inviter) {
+            console.log('🚀 executeStake 被调用');
+            console.log('   质押金额:', amount, 'DP');
+            console.log('   邀请人:', inviter);
+            
+            try {
+                const amountWei = ethers.utils.parseEther(amount);
+                const token = new ethers.Contract(CONTRACTS.dpToken, TOKEN_ABI, signer);
+                const tEngine = new ethers.Contract(CONTRACTS.tEngine, TENGINE_ABI, signer);
+
+                // 步骤 1: 检查授权
+                const allowance = await token.allowance(userAddress, CONTRACTS.tEngine);
+                if (allowance.lt(amountWei)) {
+                    showMessage(window.i18n?.t('tengine.msg.approving') || 'Step 1/2: Approving DP Token...', 'info');
+                    const approveTx = await token.approve(CONTRACTS.tEngine, ethers.constants.MaxUint256);
+                    await approveTx.wait();
+                }
+
+                // 步骤 2: 执行质押 (合约会自动处理邀请绑定)
+                showMessage(window.i18n?.t('tengine.msg.staking') || 'Step 2/2: Executing stake...', 'info');
+                console.log('📤 调用 enterPool:', {
+                    amount: ethers.utils.formatEther(amountWei),
+                    inviter: inviter
+                });
+                console.log('📝 注意: TEngine V2.6 将自动处理邀请关系绑定');
+                
+                const tx = await tEngine.enterPool(amountWei, inviter);
+                console.log('📦 交易发送:', tx.hash);
+                
+                await tx.wait();
+                console.log('✅ 交易确认');
+
+                showMessage(window.i18n?.t('tengine.msg.stakeSuccess') || 'Stake successful! T-Engine started', 'success');
+                
+                // 更新邀请关系
+                userInviter = inviter;
+                
+                document.getElementById('stakeAmount').value = '';
+                
+                // 操作后刷新数据
+                await refreshAllData();
+            } catch (error) {
+                console.error('❗ 质押失败:', error);
+                const failMsg = window.i18n?.t('tengine.msg.stakeFailed') || 'Stake failed: ';
+                showMessage(failMsg + error.message, 'error');
+            }
+        }
+
+        // ========== 显示邀请人弹窗 ==========
+        function showInviteModal() {
+            document.getElementById('inviteModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // ========== 关闭邀请人弹窗（不执行质押）==========
+        function closeInviteModal(useDefault = false) {
+            document.getElementById('inviteModal').classList.remove('active');
+            document.body.style.overflow = '';
+            document.getElementById('modalInviterInput').value = '';
+            
+            // 只有明确点击 Skip 按钮时才使用默认邀请人
+            if (useDefault && pendingStakeAmount) {
+                console.log('⚠️ 跳过填写，使用默认邀请人:', DEFAULT_INVITER);
+                executeStake(pendingStakeAmount, DEFAULT_INVITER);
+                pendingStakeAmount = null;
+            } else {
+                console.log('❌ 取消质押');
+                pendingStakeAmount = null;
+            }
+        }
+
+        // ========== 确认邀请人 ==========
+        function confirmInviter() {
+            const inviterInput = document.getElementById('modalInviterInput').value.trim();
+            
+            // 验证邀请人地址格式
+            if (inviterInput && !ethers.utils.isAddress(inviterInput)) {
+                alert(window.i18n?.t('tengine.msg.invalidAddress') || 'Please enter valid Ethereum address format');
+                return;
+            }
+            
+            const inviter = inviterInput || DEFAULT_INVITER;
+            console.log('✅ 确认邀请人:', inviter);
+            
+            // 先关闭弹窗（不触发默认逻辑）
+            document.getElementById('inviteModal').classList.remove('active');
+            document.body.style.overflow = '';
+            document.getElementById('modalInviterInput').value = '';
+            
+            // 执行质押
+            if (pendingStakeAmount) {
+                executeStake(pendingStakeAmount, inviter);
+                pendingStakeAmount = null;
+            }
+        }
+
+        // T-Engine不支持取回，隐藏此功能
+        async function unstake() {
+            showMessage(window.i18n?.t('tengine.msg.noUnstake') || 'T-Engine does not support withdrawing stakes, only claiming rewards', 'error');
+        }
+
+        // ========== 领取奖励 ==========
+        async function claimReward() {
+            if (!signer) {
+                showMessage(window.i18n?.t('tengine.msg.noWallet') || 'Please connect wallet first', 'error');
+                return;
+            }
+
+            try {
+                const tEngine = new ethers.Contract(CONTRACTS.tEngine, TENGINE_ABI, signer);
+                
+                showMessage(window.i18n?.t('tengine.msg.claiming') || 'Claiming rewards...', 'info');
+                const tx = await tEngine.claim();
+                await tx.wait();
+
+                showMessage(window.i18n?.t('tengine.msg.claimSuccess') || 'Rewards claimed successfully!', 'success');
+                
+                // 操作后刷新数据
+                await refreshAllData();
+            } catch (error) {
+                const failMsg = window.i18n?.t('tengine.msg.claimFailed') || 'Claim failed: ';
+                showMessage(failMsg + error.message, 'error');
+            }
+        }
+
+        // ========== 刷新数据 ==========
+        async function refreshData() {
+            if (!provider || !userAddress) return;
+
+            try {
+                const tEngine = new ethers.Contract(CONTRACTS.tEngine, TENGINE_ABI, provider);
+                
+                // 获取用户信息
+                const userInfo = await tEngine.userInfo(userAddress);
+                // console.log('🔍 TEngine userInfo:', userInfo); // 减少控制台输出
+
+                // 解析数据（V4修复：totalShares/claimedShares 已经是 DP 单位）
+                let totalLockedDP, releasedDP, lastClaimDay, pendingRewardsDP;
+                
+                if (Array.isArray(userInfo)) {
+                    totalLockedDP = userInfo[0];      // 累计锁定DP（投入×4）
+                    releasedDP = userInfo[1];         // 已释放DP
+                    lastClaimDay = userInfo[2];       // 上次领取天数
+                    pendingRewardsDP = userInfo[3];   // 待领取DP
+                } else {
+                    totalLockedDP = userInfo.totalShares || userInfo[0];
+                    releasedDP = userInfo.claimedShares || userInfo[1];
+                    lastClaimDay = userInfo.lastClaimDay || userInfo.lastClaimEpoch || userInfo[2];
+                    pendingRewardsDP = userInfo.pendingRewards || userInfo[3];
+                }
+
+                // V5: 尝试调用 getPendingRewards 获取实时可领取数量（包括强制释放）
+                let actualClaimable = pendingRewardsDP;
+                let actualRemaining = totalLockedDP.sub(releasedDP); // 默认值
+                
+                try {
+                    // V5 新函数：同时获取待领取和剩余份额（已包含强制释放）
+                    [actualClaimable, actualRemaining] = await Promise.all([
+                        tEngine.getPendingRewards(userAddress),
+                        tEngine.getRemainingShares(userAddress)
+                    ]);
+                    // console.log('✅ V5 数据（含强制释放）:', ethers.utils.formatEther(actualClaimable)); // 减少控制台输出
+                } catch (calcError) {
+                    // console.log('🔍 合约未提供 getPendingRewards，使用手动计算模式'); // 减少控制台输出
+                    
+                    // 手动计算：递减释放机制 0.3%/天
+                    try {
+                        const currentDay = await tEngine.getCurrentDay();
+                        // console.log('🗓️ currentDay (UTC):', currentDay.toString()); // 减少控制台输出
+                        // console.log('🗓️ lastClaimDay:', lastClaimDay.toString()); // 减少控制台输出
+                        
+                        const dayDiff = currentDay.sub(lastClaimDay);
+                        if (dayDiff.gt(0)) {
+                            // 递减释放计算（totalLockedDP 和 releasedDP 已经是 DP 单位）
+                            const unreleasedDP = totalLockedDP.sub(releasedDP);
+                            let currentRemaining = unreleasedDP;
+                            let totalClaimable = ethers.BigNumber.from(0);
+                            
+                            for (let i = 0; i < Number(dayDiff) && i < 100; i++) {  // 最多计算100天
+                                const dayRelease = currentRemaining.mul(3).div(1000); // 0.3%
+                                totalClaimable = totalClaimable.add(dayRelease);
+                                currentRemaining = currentRemaining.sub(dayRelease);
+                            }
+                            
+                            // totalClaimable 已经是 DP 单位，直接使用
+                            actualClaimable = pendingRewardsDP.add(totalClaimable);
+                            // console.log('💰 手动计算结果:', ethers.utils.formatEther(actualClaimable)); // 减少控制台输出
+                        }
+                    } catch (dayError) {
+                        console.error('⚠️ 获取 UTC day 失败:', dayError);
+                    }
+                }
+
+                // 计算显示数据（V5：使用包含强制释放的实时数据）
+                const myStakedDP = totalLockedDP.div(4);           // 我的质押：锁定DP / 4
+                const claimedDP = releasedDP;                       // 累计领取 = 已释放DP
+
+                // 更新页面（actualRemaining 和 actualClaimable 已经包含强制释放）
+                document.getElementById('myStake').textContent = parseFloat(ethers.utils.formatEther(myStakedDP)).toFixed(2) + ' DP';
+                document.getElementById('myRemaining').textContent = parseFloat(ethers.utils.formatEther(actualRemaining)).toFixed(2) + ' DP';
+                document.getElementById('pendingReward').textContent = parseFloat(ethers.utils.formatEther(actualClaimable)).toFixed(4) + ' DP';
+                document.getElementById('totalClaimed').textContent = parseFloat(ethers.utils.formatEther(claimedDP)).toFixed(2) + ' DP';
+                
+                // 获取全网数据
+                try {
+                    const totalDeposited = await tEngine.totalDeposited();
+                    document.getElementById('totalStake').textContent = parseFloat(ethers.utils.formatEther(totalDeposited)).toFixed(4) + ' DP';
+                } catch (e) {
+                    console.warn('获取全网数据失败:', e);
+                }
+                
+                // 计算下次释放倒计时 (V2.5: 基于UTC天)
+                try {
+                    const [currentDay, latestBlock, releaseDuration] = await Promise.all([
+                        tEngine.getCurrentDay(),
+                        provider.getBlock('latest'),
+                        tEngine.releaseDayDuration().catch(() => ethers.BigNumber.from(86400))
+                    ]);
+                    
+                    const now = Number(latestBlock.timestamp);
+                    const duration = Number(releaseDuration);
+                    
+                    // 计算下一个UTC天的开始时间
+                    const currentDayNum = Number(currentDay);
+                    const nextDayStart = (currentDayNum + 1) * duration;
+                    
+                    // console.log('🕒 当前UTC Day:', currentDayNum); // 减少控制台输出
+                    // console.log('🕒 下一天开始:', new Date(nextDayStart * 1000).toISOString()); // 减少控制台输出
+                    
+                    startTengineCountdown(nextDayStart);
+                } catch (err) {
+                    console.warn('倒计时计算失败:', err);
+                    document.getElementById('tengineNextRelease').textContent = '--:--:--';
+                }
+
+            } catch (error) {
+                console.error('刷新数据失败:', error);
+            }
+        }
+
+        // ========== 显示消息 ==========
+        function showMessage(text, type = 'info') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `<div class="alert ${type}">${text}</div>`;
+            setTimeout(() => { messageDiv.innerHTML = ''; }, 5000);
+        }
+
+        // ========== 移动端菜单切换 ==========
+        function toggleMobileMenu() {
+            const hamburger = document.querySelector('.hamburger');
+            const mobileMenu = document.querySelector('.mobile-menu');
+            const overlay = document.querySelector('.mobile-menu-overlay');
+            
+            hamburger.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            if (mobileMenu.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        // ========== 刷新DP余额 ==========
+        async function refreshDPBalance() {
+            if (!provider || !userAddress) return;
+            
+            try {
+                const dpToken = new ethers.Contract(CONTRACTS.dpToken, TOKEN_ABI, provider);
+                const balance = await dpToken.balanceOf(userAddress);
+                userDPBalance = ethers.utils.formatEther(balance);
+                document.getElementById('userDPBalance').textContent = parseFloat(userDPBalance).toFixed(2);
+            } catch (error) {
+                console.error('获取DP余额失败:', error);
+            }
+        }
+        
+        // ========== 设置最大量 ==========
+        function setMaxAmount() {
+            if (!userAddress) {
+                showMessage(window.i18n?.t('tengine.msg.noWallet') || 'Please connect wallet first', 'error');
+                return;
+            }
+            document.getElementById('stakeAmount').value = userDPBalance;
+        }
+        
+        // ========== 启动实时更新（已废弃，改为按需刷新）==========
+        function startRealtimeUpdate() {
+            // 不再自动刷新，改为按需刷新
+            console.log('⏸️ 自动刷新已禁用，改为操作后按需刷新');
+        }
+        
+        // ========== 刷新所有数据（用户操作后调用）==========
+        async function refreshAllData() {
+            await refreshData();
+            await refreshDPBalance();
+            try {
+                await refreshInviteInfo();
+            } catch (err) {
+                console.warn('刷新邀请信息失败:', err.message);
+            }
+        }
+        
+        // ========== T-Engine 倒计时 ==========
+        function startTengineCountdown(targetSec) {
+            const el = document.getElementById('tengineNextRelease');
+            if (!el) return;
+            if (tengineCountdownInterval) clearInterval(tengineCountdownInterval);
+
+            function pad(n) { return String(n).padStart(2, '0'); }
+            function tick() {
+                const nowMs = Date.now();
+                const diffMs = targetSec * 1000 - nowMs;
+                if (diffMs <= 0) {
+                    el.textContent = '00:00:00';
+                    clearInterval(tengineCountdownInterval);
+                    // 刷新数据
+                    setTimeout(refreshData, 1500);
+                    return;
+                }
+                const totalSec = Math.floor(diffMs / 1000);
+                const h = Math.floor(totalSec / 3600);
+                const m = Math.floor((totalSec % 3600) / 60);
+                const s = totalSec % 60;
+                el.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+            }
+
+            tick();
+            tengineCountdownInterval = setInterval(tick, 1000);
+        }
+        
+        // ========== 刷新邀请信息 ==========
+        async function refreshInviteInfo() {
+            if (!provider || !userAddress) return;
+            
+            try {
+                const tEngine = new ethers.Contract(CONTRACTS.tEngine, TENGINE_ABI, provider);
+                const passNFT = new ethers.Contract(CONTRACTS.debearPass, PASS_ABI, provider);
+                const invitationSystem = new ethers.Contract(CONTRACTS.invitationSystem, [
+                    'function inviteeCount(address) view returns (uint256)'
+                ], provider);
+                
+                // 检查是否有新方法
+                let rewardRate, availableShares;
+                try {
+                    // V2.5 使用 getInviterRewardRate 方法
+                    [rewardRate, availableShares] = await Promise.all([
+                        tEngine.getInviterRewardRate(userAddress),
+                        tEngine.getInviterAvailableShares(userAddress)
+                    ]);
+                } catch (methodError) {
+                    console.warn('合约未升级，邀请功能不可用，错误:', methodError.message);
+                    document.getElementById('myPassLevel').textContent = '需升级';
+                    document.getElementById('myRewardRate').textContent = '需升级';
+                    return;
+                }
+                
+                // 获取Pass NFT信息 (ERC1155)
+                let passLevel = '未持有 Pass';
+                try {
+                    // 先检查合约代码是否存在
+                    const code = await provider.getCode(CONTRACTS.debearPass);
+                    if (code === '0x' || code === '0x0') {
+                        console.log('DebearPass 合约未部署，使用默认奖励率');
+                        passLevel = '未持有 Pass (合约未部署)';
+                    } else {
+                        // ERC1155: tokenId 1 = Standard, 2 = Premium, 3 = Exclusive
+                        const exclusiveBalance = await passNFT.balanceOf(userAddress, 3);
+                        const premiumBalance = await passNFT.balanceOf(userAddress, 2);
+                        const standardBalance = await passNFT.balanceOf(userAddress, 1);
+                        
+                        if (exclusiveBalance.gt(0)) {
+                            passLevel = '💎 Exclusive Pass';
+                        } else if (premiumBalance.gt(0)) {
+                            passLevel = '🌟 Premium Pass';
+                        } else if (standardBalance.gt(0)) {
+                            passLevel = '⭐ Standard Pass';
+                        }
+                    }
+                } catch (passError) {
+                    console.warn('获取Pass信息失败，使用默认奖励率:', passError.message);
+                    passLevel = '未持有 Pass';
+                }
+                
+                // 获取新增数据：加速释放（发出+收到） + 邀请人数
+                let rewardsGiven = ethers.BigNumber.from(0);
+                let rewardsReceived = ethers.BigNumber.from(0);
+                let referralCount = 0;
+                
+                try {
+                    // 只获取邀请人数,不再显示加速释放
+                    referralCount = await invitationSystem.inviteeCount(userAddress);
+                    
+                    console.log(`👥 邀请人数: ${referralCount.toString()}`);
+                    
+                    // 更新页面
+                    document.getElementById('myPassLevel').textContent = passLevel;
+                    document.getElementById('myRewardRate').textContent = `${rewardRate}%`;
+                    document.getElementById('myReferralCount').textContent = referralCount.toString();
+                    
+                } catch (newDataError) {
+                    console.warn('获取邀请数据失败:', newDataError.message);
+                    // 失败时也要更新基本信息
+                    document.getElementById('myPassLevel').textContent = passLevel;
+                    document.getElementById('myRewardRate').textContent = `${rewardRate}%`;
+                    document.getElementById('myReferralCount').textContent = '0';
+                }
+                
+            } catch (error) {
+                console.error('刷新邀请信息失败:', error);
+            }
+        }
+        
+        // ========== 监听邀请奖励事件 ==========
+        function setupEventListeners() {
+            if (!provider || !userAddress) return;
+            
+            try {
+                const tEngine = new ethers.Contract(CONTRACTS.tEngine, TENGINE_ABI, provider);
+                
+                // 监听 InviteRewardReleased 事件
+                tEngine.on('InviteRewardReleased', (inviter, newUser, actualReward, expectedReward) => {
+                    if (inviter.toLowerCase() === userAddress.toLowerCase()) {
+                        const amount = parseFloat(ethers.utils.formatEther(actualReward)).toFixed(4);
+                        showMessage(`🎉 邀请奖励累加: ${amount} DP（需claim领取）`, 'success');
+                        
+                        // 监听到事件后刷新数据
+                        setTimeout(() => {
+                            refreshAllData();
+                        }, 2000);
+                    }
+                });
+                
+                console.log('✅ 事件监听已启动');
+            } catch (error) {
+                console.warn('事件监听设置失败:', error);
+            }
+        }
+        
+        // ========== 旧版实时刷新（已废弃）==========
+        // 已改为按需刷新模式，无需定时器
+    </script>
+</body>
+</html>

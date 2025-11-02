@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debear Party Whitepaper v1.0 - Trendy Metaverse Gaming Platform</title>
+    <meta name="description" content="Debear Party Whitepaper - Innovative Web3 Comprehensive Platform Based on Berachain">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #00c4ef 0%, #e900e9 100%);
+            --secondary-gradient: linear-gradient(135deg, #4dd0e1 0%, #d91e5a 100%);
+            --neon-cyan: #00c4ef;
+            --neon-pink: #e900e9;
+            --neon-magenta: #d91e5a;
+            --dark-bg: #0a0e1a;
+            --dark-surface: #1a0a2e;
+            --dark-purple: #2d1b4e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0b1d4;
+            --grid-color: rgba(0, 196, 239, 0.12);
+            
+            /* z-index layer system */
+            --z-background: -1;
+            --z-content: 1;
+            --z-navbar: 100;
+            --z-mobile-menu-overlay: 110;
+            --z-mobile-menu: 120;
+            --z-hamburger: 130;
+            --z-toast: 200;
+            --z-modal: 300;
+            
+            /* spacing system */
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 24px;
+            --spacing-lg: 32px;
+            --spacing-xl: 40px;
+            --spacing-2xl: 48px;
+            --spacing-3xl: 64px;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        /* Particle Background */
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background: radial-gradient(ellipse at top, #2d1b4e 0%, #1a0a2e 50%, #0a0e1a 100%);
+        }
+
+        /* ========== Navigation Bar ========== */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: var(--z-navbar);
+            padding: var(--spacing-md) 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 14, 26, 0.5);
+            backdrop-filter: blur(20px);
+            border-bottom: 2px solid rgba(0, 196, 239, 0.2);
+            box-shadow: 0 4px 24px rgba(0, 196, 239, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            padding: var(--spacing-sm) 5%;
+            background: rgba(10, 14, 26, 0.75);
+            box-shadow: 0 4px 24px rgba(233, 0, 233, 0.12);
+            border-bottom: 2px solid rgba(233, 0, 233, 0.25);
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: var(--spacing-xl);
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-menu a:hover {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 8px rgba(0, 196, 239, 0.6);
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+            box-shadow: 0 0 6px rgba(0, 196, 239, 0.5);
+            transition: width 0.3s;
+        }
+
+        .nav-menu a:hover::after {
+            width: 100%;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .connect-btn {
+            padding: 12px var(--spacing-lg);
+            background: var(--primary-gradient);
+            border: 2px solid transparent;
+            border-radius: 25px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(0, 196, 239, 0.4), 0 0 32px rgba(233, 0, 233, 0.25);
+        }
+
+        .connect-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(0, 196, 239, 0.6), 0 0 40px rgba(233, 0, 233, 0.4);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .connect-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ========== Language Switcher ========== */
+        .lang-switcher {
+            position: relative;
+            margin-right: var(--spacing-sm);
+        }
+        
+        .lang-btn {
+            padding: 8px 16px;
+            background: rgba(0, 196, 239, 0.1);
+            border: 2px solid rgba(0, 196, 239, 0.3);
+            border-radius: 20px;
+            color: var(--neon-cyan);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            min-width: 50px;
+        }
+        
+        .lang-btn:hover {
+            background: rgba(0, 196, 239, 0.2);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 12px rgba(0, 196, 239, 0.4);
+        }
+        
+        .lang-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 196, 239, 0.3);
+            border-radius: 12px;
+            padding: 8px;
+            min-width: 140px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 1000;
+            box-shadow: 0 8px 24px rgba(0, 196, 239, 0.2);
+        }
+        
+        .lang-switcher:hover .lang-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .lang-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            color: white;
+        }
+        
+        .lang-option:hover {
+            background: rgba(0, 196, 239, 0.15);
+        }
+        
+        .lang-option.active {
+            background: rgba(0, 196, 239, 0.1);
+            color: var(--neon-cyan);
+        }
+
+        /* ========== Hamburger Menu ========== */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 10px;
+            z-index: var(--z-hamburger);
+            background: transparent;
+            border: none;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0, 196, 239, 0.5);
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        /* ========== Mobile Menu ========== */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: var(--z-mobile-menu-overlay);
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            height: 100vh;
+            background: rgba(10, 14, 26, 0.98);
+            backdrop-filter: blur(20px);
+            border-left: 2px solid rgba(0, 196, 239, 0.3);
+            box-shadow: -4px 0 30px rgba(0, 196, 239, 0.2);
+            padding: 80px 30px 30px;
+            transition: right 0.4s ease;
+            z-index: var(--z-mobile-menu);
+            overflow-y: auto;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-nav-links {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .mobile-nav-links li {
+            margin: 0;
+            padding: 0;
+        }
+
+        .mobile-nav-links a {
+            display: block;
+            padding: 15px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-radius: 12px;
+        }
+
+        .mobile-nav-links a:hover,
+        .mobile-nav-links a.active {
+            background: rgba(0, 196, 239, 0.1);
+            color: var(--neon-cyan);
+            text-shadow: 0 0 8px rgba(0, 196, 239, 0.5);
+        }
+
+        .mobile-connect-btn {
+            display: none;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* Whitepaper Container */
+        .whitepaper-container {
+            max-width: 900px;
+            margin: 120px auto 50px;
+            padding: 0 5%;
+        }
+
+        /* Header Styles */
+        .wp-header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding-bottom: 40px;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .wp-header h1 {
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 15px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .wp-header .subtitle {
+            font-size: 24px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .wp-header .meta {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Table of Contents */
+        .toc {
+            background: rgba(0, 212, 255, 0.05);
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 50px;
+        }
+
+        .toc h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--neon-cyan);
+        }
+
+        .toc ol {
+            list-style: none;
+            counter-reset: toc-counter;
+        }
+
+        .toc li {
+            counter-increment: toc-counter;
+            margin: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .toc li::before {
+            content: counter(toc-counter) ".";
+            position: absolute;
+            left: 0;
+            color: var(--neon-cyan);
+            font-weight: 700;
+        }
+
+        .toc a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .toc a:hover {
+            color: var(--neon-cyan);
+        }
+
+        /* Section Styles */
+        .section {
+            margin-bottom: 60px;
+        }
+
+        .section h2 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 25px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 30px 0 20px;
+            color: var(--neon-cyan);
+        }
+
+        .section h4 {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 25px 0 15px;
+            color: var(--neon-pink);
+        }
+
+        .section h5 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 20px 0 10px;
+            color: var(--text-primary);
+        }
+
+        .section p {
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .section ul, .section ol {
+            margin: 20px 0;
+            padding-left: 30px;
+            color: var(--text-secondary);
+        }
+
+        .section li {
+            margin: 10px 0;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            background: rgba(0, 212, 255, 0.03);
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        th {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--neon-cyan);
+            font-weight: 700;
+        }
+
+        td {
+            color: var(--text-secondary);
+        }
+
+        /* Highlight Boxes */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(255, 0, 255, 0.08) 100%);
+            border-left: 4px solid var(--neon-cyan);
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 10px;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, rgba(255, 0, 255, 0.08) 0%, rgba(233, 30, 99, 0.08) 100%);
+            border-left: 4px solid var(--neon-pink);
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 10px;
+        }
+
+        /* Emoji Icon */
+        .emoji-icon {
+            font-size: 32px;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 5%;
+            border-top: 2px solid rgba(0, 212, 255, 0.2);
+            color: var(--text-secondary);
+            margin-top: 80px;
+        }
+
+        /* Back to Home Button */
+        .back-home-btn {
+            padding: 8px 20px;
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 20px;
+            color: var(--neon-cyan);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .back-home-btn:hover {
+            background: var(--neon-cyan);
+            color: white;
+            box-shadow: 0 0 20px rgba(0, 196, 239, 0.5);
+        }
+
+        /* ========== Responsive ========== */
+        @media (max-width: 768px) {
+            .wp-header h1 { font-size: 32px; }
+            .wp-header .subtitle { font-size: 18px; }
+            .section h2 { font-size: 28px; }
+            .section h3 { font-size: 22px; }
+            .section h4 { font-size: 18px; }
+            .whitepaper-container { margin-top: 100px; }
+            
+            table {
+                font-size: 14px;
+            }
+            
+            th, td {
+                padding: 10px;
+            }
+            
+            .nav-menu { display: none; }
+            .navbar .connect-btn { display: none; }
+            .hamburger { display: none; }
+            .mobile-menu { display: none; }
+            .mobile-menu-overlay { display: none; }
+            .mobile-connect-btn { display: none; }
+            .lang-switcher { display: none; }
+            
+            /* Show only back button on mobile */
+            .back-home-btn { display: inline-block; }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <a href="index.html" class="logo">🐻 Debear Party</a>
+        <ul class="nav-menu">
+            <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+            <li><a href="swap.html" data-i18n="nav.swap">Swap</a></li>
+            <li><a href="pass-nft.html" data-i18n="nav.pass">Pass NFT</a></li>
+            <li><a href="t-engine.html" data-i18n="nav.tengine">T-Engine</a></li>
+            <li><a href="gamefi.html" data-i18n="nav.gamefi">GameFi</a></li>
+        </ul>
+        <div class="nav-buttons">
+            <!-- Back to Home Button (Mobile) -->
+            <a href="index.html" class="back-home-btn">← Home</a>
+            <!-- Language Switcher -->
+            <div class="lang-switcher">
+                <button class="lang-btn">EN</button>
+                <div class="lang-dropdown">
+                    <div class="lang-option active" data-lang="en" onclick="window.i18n?.setLanguage('en')">
+                        <span data-i18n="lang.en">English</span>
+                    </div>
+                    <div class="lang-option" data-lang="zh-TW" onclick="window.i18n?.setLanguage('zh-TW')">
+                        <span data-i18n="lang.zh">繁體中文</span>
+                    </div>
+                </div>
+            </div>
+            <button class="connect-btn" onclick="connectWallet()" data-i18n="nav.connect">Connect Wallet</button>
+            <button class="hamburger" onclick="toggleMobileMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- Mobile Sidebar Menu -->
+    <div class="mobile-menu">
+        <ul class="mobile-nav-links">
+            <li><a href="index.html" data-i18n="nav.home">← Back to Home</a></li>
+        </ul>
+        <!-- Mobile Language Selection -->
+        <div style="margin-top: 20px; padding: 10px 0; border-top: 1px solid rgba(0, 212, 255, 0.2);">
+            <h4 style="color: var(--neon-cyan); padding: 0 15px; margin-bottom: 10px; font-size: 14px;">🌐 Language / 語言</h4>
+            <div class="lang-option active" style="padding: 12px; cursor: pointer;" onclick="window.i18n?.setLanguage('en'); window.location.href='whitepaper-en.html';">
+                <span data-i18n="lang.en">English</span>
+            </div>
+            <div class="lang-option" style="padding: 12px; cursor: pointer;" onclick="window.i18n?.setLanguage('zh-TW'); window.location.href='whitepaper.html';">
+                <span data-i18n="lang.zh">繁體中文</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Whitepaper Content -->
+    <div class="whitepaper-container">
+        <!-- Header -->
+        <div class="wp-header">
+            <h1>Debear Party Whitepaper</h1>
+            <p class="subtitle">Trendy Metaverse Gaming Platform</p>
+            <div class="meta">
+                <span><strong>Version:</strong> v1.0</span>
+                <span><strong>Release Date:</strong> 2025</span>
+            </div>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h2>📋 Table of Contents</h2>
+            <ol>
+                <li><a href="#section-1">Project Overview</a></li>
+                <li><a href="#section-2">Vision & Mission</a></li>
+                <li><a href="#section-3">Core Innovation</a></li>
+                <li><a href="#section-4">Pass Benefits System</a></li>
+                <li><a href="#section-5">DP Token Economics</a></li>
+                <li><a href="#section-6">T-Engine Model</a></li>
+                <li><a href="#section-7">Referral Incentive System</a></li>
+                <li><a href="#section-8">Liquidity Staking</a></li>
+                <li><a href="#section-9">Ecosystem Development Roadmap</a></li>
+                <li><a href="#section-10">Team & Partners</a></li>
+                <li><a href="#section-11">Risk Disclaimer</a></li>
+            </ol>
+        </div>
+
+        <!-- 1. Project Overview -->
+        <div class="section" id="section-1">
+            <h2>1. Project Overview</h2>
+            
+            <h3>What is Debear Party?</h3>
+            <p>Debear Party is an innovative Web3 comprehensive platform based on Berachain, integrating NFT, DeFi, GameFi, trendy culture, and asset management. Our unique approach features the T-Engine (Transformation Engine) mechanism, a multi-tier NFT benefits system, and social gaming, designed to provide users with sustained rewards and value growth.</p>
+
+            <h4>Core Features:</h4>
+            <ul>
+                <li><strong>Three-Tier Pass System</strong>: Standard / Premium / Exclusive tiered benefits.</li>
+                <li><strong>T-Engine Innovation</strong>: Driving value growth through the deflationary mechanism of the Transformation Engine.</li>
+                <li><strong>Multiple Revenue Streams</strong>: Including mining, staking, referral rewards, GameFi, and RWA (Real World Assets).</li>
+                <li><strong>Community-Driven</strong>: Featuring referral mechanisms and DAO governance (coming soon).</li>
+                <li><strong>Metaverse Gaming</strong>: Upcoming innovative social GameFi gameplay (coming soon).</li>
+                <li><strong>RWA Assets</strong>: Web3 innovation combining trendy physical items and nightclub industry assets (coming soon).</li>
+            </ul>
+        </div>
+
+        <!-- 2. Vision & Mission -->
+        <div class="section" id="section-2">
+            <h2>2. Vision & Mission</h2>
+            
+            <h3>Vision</h3>
+            <p>To become the most innovative trendy metaverse platform in the Berachain ecosystem, connecting Web3 technology with trendy culture and endowing digital assets with real entertainment value.</p>
+
+            <h3>Mission</h3>
+            <ul>
+                <li>Bring new vitality to Berachain.</li>
+                <li>Provide DeFi investors with sustainable revenue models.</li>
+                <li>Offer gaming enthusiasts fun and engaging social gaming experiences with play-to-earn mechanics.</li>
+                <li>Create a platform for trendy artists and enthusiasts that combines digital and physical assets.</li>
+                <li>Build a fair and transparent value ecosystem through community-driven methods.</li>
+                <li>Lower the barrier to Web3 participation, enabling more people to enjoy the benefits of decentralized finance.</li>
+            </ul>
+        </div>
+
+        <!-- 3. Core Innovation -->
+        <div class="section" id="section-3">
+            <h2>3. Core Innovation</h2>
+
+            <h3>3.1 T-Engine (Transformation Engine)</h3>
+            <p>Comparison between traditional mining and Debear Party's T-Engine:</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Comparison</th>
+                        <th>Traditional Mining</th>
+                        <th>Debear Party T-Engine</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Investment</td>
+                        <td>Stake tokens (withdrawable)</td>
+                        <td>Burn transformation (permanently reduced circulation)</td>
+                    </tr>
+                    <tr>
+                        <td>Returns</td>
+                        <td>Fixed APY</td>
+                        <td>4x shares + gradual release</td>
+                    </tr>
+                    <tr>
+                        <td>Deflationary Effect</td>
+                        <td>None</td>
+                        <td>Strong deflation</td>
+                    </tr>
+                    <tr>
+                        <td>Price Support</td>
+                        <td>Weak</td>
+                        <td>Strong (due to constantly decreasing supply)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>3.2 Pass-Driven Community Incentives</h3>
+            <p>Holding NFTs equals becoming a platform shareholder:</p>
+            <ul>
+                <li>Perpetual mining rights.</li>
+                <li>Referral promotion revenue.</li>
+                <li>Future dividend rights.</li>
+                <li>DAO governance voting rights.</li>
+                <li>Priority access to RWA assets.</li>
+            </ul>
+
+            <h3>3.3 Dynamic Economic Model</h3>
+            <ul>
+                <li><strong>Phase 1</strong>: Launch 500 million DP tokens.</li>
+                <li><strong>Phase 2</strong>: Unlock another 500 million DP when TVL reaches certain levels.</li>
+                <li><strong>NFT Mining</strong>: Dynamically adjust output based on TVL.</li>
+                <li><strong>Adaptive Balance</strong>: The ecosystem automatically regulates supply and demand.</li>
+            </ul>
+        </div>
+
+        <!-- 4. Pass Benefits System -->
+        <div class="section" id="section-4">
+            <h2>4. Pass Benefits System</h2>
+
+            <h3>4.1 Three-Tier Pass Configuration</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tier</th>
+                        <th>Price</th>
+                        <th>Supply</th>
+                        <th>Sales Method</th>
+                        <th>Mining Power</th>
+                        <th>Pass Sales Reward</th>
+                        <th>T-Engine Boost Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>🎫 Standard Pass</td>
+                        <td>$800</td>
+                        <td>1,300</td>
+                        <td>Public Sale</td>
+                        <td>1x</td>
+                        <td>5%</td>
+                        <td>8%</td>
+                    </tr>
+                    <tr>
+                        <td>🎫 Premium Pass</td>
+                        <td>$3,000</td>
+                        <td>500</td>
+                        <td>Public Sale</td>
+                        <td>3.5x</td>
+                        <td>8%</td>
+                        <td>11%</td>
+                    </tr>
+                    <tr>
+                        <td>🎫 Exclusive Pass</td>
+                        <td>$6,600</td>
+                        <td>200</td>
+                        <td>Whitelist System*</td>
+                        <td>7x</td>
+                        <td>12%</td>
+                        <td>15%</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p><em>Note: Exclusive Pass requires meeting specific conditions (details to be announced).</em></p>
+
+            <h3>4.2 Core Pass Benefits</h3>
+            
+            <h4>Perpetual Mining Rights:</h4>
+            <ul>
+                <li>Standard Pass enjoys base speed, ensuring stable output.</li>
+                <li>Premium Pass operates at 3.5x speed, offering excellent value.</li>
+                <li>Exclusive Pass runs at an impressive 7x speed, suitable for high-reward seekers.</li>
+                <li>Mining output adjusts with platform TVL changes to maintain ecosystem balance.</li>
+            </ul>
+
+            <h4>Referral Reward Rights:</h4>
+            <ul>
+                <li>Must hold Pass to receive Pass sales rewards. Holding Pass can increase T-engine referral accelerated release rate.</li>
+                <li>If referee purchases Pass, receive 5%/8%/12% of purchase amount as BERA rewards.</li>
+                <li>If referee enters T-Engine, receive 8%/11%/15% of accelerated release amount. (Requires user to have T-engine release shares)</li>
+            </ul>
+
+            <h4>DAO Governance Rights:</h4>
+            <ul>
+                <li>Participate in platform major decision voting.</li>
+                <li>Propose and discuss new feature proposals.</li>
+                <li>Influence the entire ecosystem's development direction.</li>
+            </ul>
+
+            <h4>Future Benefits:</h4>
+            <ul>
+                <li>Platform fee dividends (once activated).</li>
+                <li>RWA asset revenue distribution.</li>
+                <li>GameFi game exclusive privileges.</li>
+                <li>Priority purchase rights for limited trendy merchandise.</li>
+            </ul>
+        </div>
+
+        <!-- 5. DP Token Economics -->
+        <div class="section" id="section-5">
+            <h2>5. DP Token Economics</h2>
+
+            <h3>5.1 Token Basic Information</h3>
+            <table>
+                <tbody>
+                    <tr>
+                        <td><strong>Token Name</strong></td>
+                        <td>Debear Party Token</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Token Symbol</strong></td>
+                        <td>DP</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Blockchain</strong></td>
+                        <td>Berachain</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Token Standard</strong></td>
+                        <td>ERC-20</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Maximum Supply</strong></td>
+                        <td>1,000,000,000 DP (1 Billion)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Initial Release</strong></td>
+                        <td>500,000,000 DP (500 Million)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Reserved Release</strong></td>
+                        <td>500,000,000 DP (500 Million, unlocked after TVL milestone)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>5.2 Phase 1 Token Distribution (500M DP)</h3>
+            <table>
+                <tbody>
+                    <tr>
+                        <td><strong>NFT Mining</strong></td>
+                        <td>100,000,000 DP (100 Million)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>T-Engine Mining</strong></td>
+                        <td>360,000,000 DP (360 Million)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Initial Liquidity</strong></td>
+                        <td>10,000,000 DP (10 Million)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Community Rewards</strong></td>
+                        <td>10,000,000 DP (10 Million)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Team</strong></td>
+                        <td>8,000,000 DP (8 Million) - 24-month lock</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Creative Artists</strong></td>
+                        <td>5,000,000 DP (5 Million) - 24-month lock</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Economic Advisors</strong></td>
+                        <td>4,000,000 DP (4 Million) - 24-month lock</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Emergency Reserve</strong></td>
+                        <td>3,000,000 DP (3 Million)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>5.3 Token Utilities</h3>
+            <ul>
+                <li>Use T-Engine to burn tokens for more mining shares.</li>
+                <li>Participate in LP liquidity staking to provide liquidity and earn rewards.</li>
+                <li>Participate in DAO governance voting to determine ecosystem development.</li>
+                <li>Used for internal consumption and reward distribution in future GameFi games.</li>
+                <li>Purchase RWA assets, i.e., digitized real-world items.</li>
+                <li>Pay various fees on the platform, such as NFT marketplace transaction fees.</li>
+            </ul>
+
+            <h3>5.4 Deflationary Mechanism</h3>
+            <p>DP is a strongly deflationary token:</p>
+            <ol>
+                <li><strong>T-Engine Direct Burn</strong> — All investments are permanently burned and never re-enter market circulation.</li>
+                <li><strong>T-Engine Release Burn</strong> — DP tokens released daily from T-Engine pool have 10% burned upon release.</li>
+                <li><strong>In-Game Consumption/Burn</strong> — In upcoming game activities, DP will also appear as a consumable.</li>
+            </ol>
+
+            <div class="highlight-box">
+                <p><strong>Projected Deflation:</strong></p>
+                <p>Assuming 30% of DP participates in T-Engine, the first year's burn amount will be approximately 5-8 million, meaning an annual deflation rate of about 5%-8%.</p>
+            </div>
+        </div>
+
+        <!-- 6. T-Engine Model -->
+        <div class="section" id="section-6">
+            <h2>6. T-Engine Model</h2>
+
+            <h3>6.1 What is T-Engine?</h3>
+            <p>T-Engine (Transformation Engine) represents Debear Party's core technological innovation. Unlike traditional staking methods, which typically involve "locking tokens for rewards with anytime redemption of principal," T-Engine takes a more aggressive approach: "permanently converting tokens into an irreversible form (burn), while transforming them into quadruple mining shares." This transformation is similar to nature's metamorphosis process, converting ordinary matter into precious metal. This process not only symbolizes a fundamental change in wealth form but also marks a significant increase in the value of users' held DP tokens.</p>
+
+            <div class="highlight-box">
+                <h4><span class="emoji-icon">⚡</span>T-Engine Core Advantages</h4>
+                <ul>
+                    <li><strong>4x Return Multiplier</strong>: Invest 1 DP to get 4 mining shares</li>
+                    <li><strong>Strong Deflationary Mechanism</strong>: Permanent burning reduces circulating supply</li>
+                    <li><strong>Price Support</strong>: Continuous burning provides strong support for token price</li>
+                    <li><strong>Long-term Value</strong>: Gradual release mechanism ensures sustained rewards</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 7. Referral Incentive System -->
+        <div class="section" id="section-7">
+            <h2>7. Referral Incentive System</h2>
+
+            <h3>Ecological Value of the Referral System</h3>
+            <ul>
+                <li><strong>Self-Propagating Growth Engine</strong> — Relying on community's own promotional power, effectively reducing marketing costs.</li>
+                <li><strong>Community Collaboration Spirit</strong> — Every promoter is an indispensable part of this ecosystem, jointly shaping its growth trajectory.</li>
+                <li><strong>Preventing Abuse</strong> — Setting minimum NFT holding standards ($800+) effectively filters out high-quality participant groups.</li>
+                <li><strong>Positive Feedback Loop</strong> — Each successful promotional campaign attracts more newcomers, leading to more token burns, pushing market prices upward, ultimately attracting more potential new users.</li>
+            </ul>
+        </div>
+
+        <!-- 8. Liquidity Staking -->
+        <div class="section" id="section-8">
+            <h2>8. Liquidity Staking</h2>
+
+            <h3>8.1 DP-BERA LP Staking <em>(Coming Soon)</em></h3>
+            <p>Provide liquidity for DP-BERA trading pair and earn dual rewards:</p>
+
+            <h4>Revenue Sources:</h4>
+            <ol>
+                <li>DEX exchange transaction fee share (0.3% of total fees).</li>
+                <li>Berachain's unique PoL (Proof of Liquidity) mechanism, team will apply for PoL reward vault whitelist at the appropriate time, enabling all LP providers to receive higher returns.</li>
+            </ol>
+
+            <h3>8.2 Reasons to Provide Liquidity</h3>
+            <ul>
+                <li><strong>Support Ecosystem Development</strong> — Higher liquidity means more stable market prices.</li>
+                <li><strong>Obtain High Yields</strong> — In addition to regular APY, there are extra fee shares.</li>
+                <li><strong>Extreme Flexibility</strong> — Can exit liquidity pool anytime according to personal needs.</li>
+                <li><strong>Early-stage Advantages</strong> — APY is relatively higher due to less initial liquidity.</li>
+                <li><strong>Random Airdrop Benefits</strong> — Occasional surprise gifts for outstanding project supporters.</li>
+            </ul>
+        </div>
+
+        <!-- 9. Ecosystem Development Roadmap -->
+        <div class="section" id="section-9">
+            <h2>9. Ecosystem Development Roadmap</h2>
+
+            <h3>9.1 Phase 1: Launch & Community Building (Q2-Q3 2025)</h3>
+            <h4>Objectives:</h4>
+            <p>Establish a solid foundation community and initiate NFT sales activities.</p>
+
+            <h4>Complete the Following Tasks:</h4>
+            <ul>
+                <li><strong>Pass Sales</strong>: Public sale of Standard Pass & Premium Pass, while implementing Exclusive Pass whitelist sales strategy for qualified users; simultaneously activate referral system to promote organic growth.</li>
+                <li><strong>Token Launch</strong>: Establish initial liquidity pool (DP-BERA) and list on DEX platforms for trading circulation.</li>
+                <li><strong>Core Features Launch</strong>: Officially launch NFT mining functionality, fully open T-Engine mining capabilities.</li>
+                <li><strong>Community Building</strong>: Actively operate official social media accounts, maintain Telegram community activity, and plan a series of community incentive activities to stimulate member enthusiasm.</li>
+            </ul>
+
+            <h4>Expected Milestone Achievements:</h4>
+            <ul>
+                <li>Successfully sell out all 2,000 Passes.</li>
+                <li>Over 1,000 active participants forming a strong community foundation.</li>
+                <li>Total Value Locked (TVL) surpasses $5 million mark.</li>
+            </ul>
+
+            <h3>9.2 Phase 2: Ecosystem Expansion (Q4 2025 – Q1 2026)</h3>
+            <h4>Objectives:</h4>
+            <p>Further enrich product variety and service scope, strengthen overall ecosystem value.</p>
+
+            <h4>Implementation Measures:</h4>
+            <ul>
+                <li><strong>GameFi Game Launch</strong>: Introduce social-rich gaming experiences, design reasonable DP consumption mechanisms with abundant game reward pools to stimulate player enthusiasm.</li>
+                <li><strong>DAO Governance Activation</strong>: Establish sound proposal submission channels, fair and transparent voting rules, and efficient community treasury management systems to maximize member interests.</li>
+                <li><strong>RWA Asset Module Development</strong>: Promote trendy merchandise digitization, covering limited edition sneakers, famous trendy brand clothing, and even exclusive club memberships, connecting online virtual identity with offline physical asset exchange.</li>
+            </ul>
+
+            <h4>Expected Milestone Achievements:</h4>
+            <ul>
+                <li>Total Value Locked (TVL) climbs to $20 million high point.</li>
+                <li>Monthly active users exceed 5,000 mark.</li>
+                <li>At least one RWA asset successfully launches on platform for trading.</li>
+            </ul>
+        </div>
+
+        <!-- 10. Team & Partners -->
+        <div class="section" id="section-10">
+            <h2>10. Team & Partners</h2>
+
+            <h3>10.1 Team Vision</h3>
+            <p>The Debear Party team gathers technical experts from Web3 technology frontiers, scholars deeply researching DeFi fields, creative game designers, and trendy culture enthusiasts. We firmly believe that "Web3 is not only a ladder for technological innovation but also a social transformation redefining value distribution patterns." This belief drives our relentless efforts to create a beautiful vision where every participant can share the fruits of ecosystem growth.</p>
+
+            <h3>10.2 Partners <em>(In Planning)</em></h3>
+            <p>We will seek to establish close cooperative relationships with multiple parties:</p>
+            <ul>
+                <li><strong>Berachain Official Institutions</strong> — Looking forward to their full support in technical assistance and ecosystem resource integration;</li>
+                <li><strong>DeFi Protocol Providers</strong> — Hoping to jointly optimize liquidity management and improve investment return efficiency through deep integration of each other's products and services;</li>
+                <li><strong>Game Developers</strong> — Hoping to engage in close exchanges and cooperation in GameFi content creation;</li>
+                <li><strong>Trendy Brand Merchants</strong> — Planning to jointly explore new blue oceans in RWA asset markets;</li>
+                <li><strong>Security Audit Companies</strong> — Will hire professional security audit companies to safeguard our smart contract security.</li>
+            </ul>
+        </div>
+
+        <!-- 11. Risk Disclaimer -->
+        <div class="section" id="section-11">
+            <h2>11. Risk Disclaimer</h2>
+
+            <div class="warning-box">
+                <h3>⚠️ Important Statement</h3>
+                <p>Investing in cryptocurrencies and participating in DeFi projects carries high risks. Please make cautious decisions with full understanding of risks, only investing funds you can afford to lose.</p>
+            </div>
+
+            <h3>11.1 Market Risks</h3>
+            <ul>
+                <li>Cryptocurrency prices can be extremely volatile, whether DP or BERA may experience significant price fluctuations.</li>
+                <li>In the early stages of the project, there may be insufficient liquidity issues, which could affect transaction smoothness and price discovery process.</li>
+                <li>Different countries and regions have varying regulatory attitudes toward blockchain and cryptocurrency industries, these policy uncertainties may also bring certain challenges to the project.</li>
+            </ul>
+
+            <h3>11.2 Technical Risks</h3>
+            <ul>
+                <li>Although our smart contracts have undergone rigorous audit procedures, there may still be undiscovered security vulnerabilities.</li>
+                <li>Berachain network itself as an emerging public chain infrastructure, its stability and performance also need close attention.</li>
+                <li>While we have taken a series of protective measures to resist hacker attack risks, in a highly interconnected and complex internet environment, there is always the possibility of malicious intrusion.</li>
+            </ul>
+
+            <h3>11.3 Project Risks</h3>
+            <ul>
+                <li>Smooth implementation of this project depends on the team's professional capabilities and execution power.</li>
+                <li>Competitive landscape of similar products in the market cannot be ignored, they may affect our user attraction to some extent.</li>
+                <li>Failure to reach predetermined TVL target values on schedule may affect next-stage token release timeline arrangements.</li>
+            </ul>
+
+            <h3>11.4 Investment Advice</h3>
+            <div class="highlight-box">
+                <p><strong>Solemnly remind all investors to note the following:</strong></p>
+                <ul>
+                    <li>Only invest funds you can afford to lose;</li>
+                    <li>Must fully understand relevant mechanism principles before making any substantial participation;</li>
+                    <li>Do not easily trust so-called ultra-high return promises, always maintain clear mind and rational approach to every investment decision;</li>
+                    <li>Regularly track and observe the latest project developments for timely reasonable judgments;</li>
+                    <li>Diversifying your investment portfolio helps effectively reduce potential risk exposure from single investment varieties.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Conclusion -->
+        <div class="section">
+            <h2>Why Choose Debear Party?</h2>
+            
+            <div class="highlight-box">
+                <h3>Here's Why:</h3>
+                <ul>
+                    <li><strong>Powerful Deflationary Model</strong> — T-Engine will continuously reduce market available supply;</li>
+                    <li><strong>Multiple Income Streams</strong> — Earn generous returns through mining, staking, or even inviting others to join;</li>
+                    <li><strong>Community Power</strong> — Referral reward program plus DAO governance structure ensures everyone's voice is heard;</li>
+                    <li><strong>Unique T-Engine</strong> — Breaking traditional economic frameworks;</li>
+                    <li><strong>Long-term Development Space</strong> — Broad prospects provided by DeFi, GameFi, and RWA comprehensive ecosystem;</li>
+                    <li><strong>Transparent and Trustworthy</strong> — Smart contracts strictly execute code regulations eliminating human intervention possibilities.</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin: 50px 0;">
+                <h3 style="font-size: 32px; margin-bottom: 20px;">🎉 Join Us Now!</h3>
+                <p style="font-size: 18px; color: var(--text-secondary); margin-bottom: 30px;">
+                    Witness together how each small participation converges into a powerful flood driving value appreciation!
+                </p>
+                <a href="index.html" class="back-btn" style="display: inline-block; padding: 16px 40px; font-size: 18px;">Experience Now</a>
+            </div>
+
+            <div style="text-align: center; margin-top: 60px; padding: 30px; background: rgba(0, 212, 255, 0.05); border-radius: 15px;">
+                <h4 style="margin-bottom: 20px; color: var(--neon-cyan);">🌐 Official Links</h4>
+                <p style="color: var(--text-secondary); line-height: 2;">
+                    <strong>Website:</strong> <a href="https://debear.party" target="_blank" style="color: var(--neon-cyan); text-decoration: none;">debear.party</a><br>
+                    <strong>Twitter:</strong> <a href="https://x.com/DebearParty" target="_blank" style="color: var(--neon-cyan); text-decoration: none;">@DebearParty</a><br>
+                    <strong>Telegram:</strong> TBD
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px; font-size: 24px; font-weight: 700; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+                Debear Party —— Making Each Participation an Important Step Towards Value Growth.
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>© 2025 Debear Party. All rights reserved. Built on Berachain.</p>
+    </div>
+
+    <script src="js/libs/particles.min.js"></script>
+    
+    <!-- Internationalization Config -->
+    <script src="js/i18n.js"></script>
+    
+    <!-- Common Script -->
+    <script src="js/common.js"></script>
+    
+    <script>
+        // Particle background
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 80, density: { enable: true, value_area: 800 } },
+                color: { value: ['#00d4ff', '#ff00ff'] },
+                shape: { type: 'circle' },
+                opacity: { value: 0.5, random: true },
+                size: { value: 3, random: true },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#00d4ff',
+                    opacity: 0.2,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 1,
+                    direction: 'none',
+                    random: true
+                }
+            }
+        });
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
