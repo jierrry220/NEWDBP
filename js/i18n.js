@@ -14,7 +14,7 @@ const translations = {
         'nav.connect': 'Connect Wallet',
         
         // Hero 区域
-        'hero.badge': '🚀 Built on Berachain Mainnet',
+        'hero.badge': '🚀 Built on Berachain',
         'hero.title': 'Debear Party',
         'hero.subtitle': 'Next-Generation Web3 Trendy Metaverse Gaming Platform',
         'hero.description': 'Innovative Web3.0 Comprehensive Platform - DeFi, GameFi, and Trendy Collectibles Await Your Discovery',
@@ -224,7 +224,7 @@ const translations = {
         'nav.connect': '連接錢包',
         
         // Hero 區域
-        'hero.badge': '🚀 基於 Berachain 主網',
+        'hero.badge': '🚀 基於 Berachain',
         'hero.title': 'Debear Party',
         'hero.subtitle': '下一代 Web3 潮流元宇宙遊戲平台',
         'hero.description': '創新型Web3.0綜合平台 DeFi GameFi 潮流玩物待你發現',
