@@ -581,6 +581,7 @@ class SwapManager {
         
         // Get swap data from Kodiak API
         this.showMessage('Getting best route...', 'info');
+        console.log('Requesting swap data from Kodiak...');
         const swapData = await this.kodiakAPI.getSwapData(
             tokenInAddress,
             tokenOutAddress,
@@ -600,13 +601,26 @@ class SwapManager {
             from: this.userAddress
         };
         
+        console.log('Transaction params:', txParams);
+        
         // Execute transaction
         this.showMessage('Executing swap...', 'info');
+        console.log('Sending transaction to wallet...');
+        
         const tx = await this.signer.sendTransaction(txParams);
+        console.log('Transaction sent! Hash:', tx.hash);
+        console.log('Full tx object:', tx);
         
         // Wait for confirmation
         this.showMessage('Waiting for confirmation...', 'info');
-        await tx.wait();
+        console.log('Waiting for transaction confirmation...');
+        
+        const receipt = await tx.wait();
+        console.log('Transaction confirmed! Receipt:', receipt);
+        
+        if (receipt.status === 0) {
+            throw new Error('Transaction failed on-chain');
+        }
         
         return tx.hash;
     }
