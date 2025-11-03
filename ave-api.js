@@ -52,7 +52,7 @@ class AveAPI {
             
             if (isProduction) {
                 // 生产环境：使用服务器端代理避免 CORS
-                console.log('Fetching price via proxy');
+                // console.log('Fetching price via proxy');
                 response = await fetch('/api/ave-price', {
                     method: 'GET',
                     headers: {
@@ -62,7 +62,7 @@ class AveAPI {
                 });
             } else {
                 // 本地开发：直接调用 Ave API
-                console.log('Fetching price from Ave API directly');
+                // console.log('Fetching price from Ave API directly');
                 response = await fetch(`${this.baseURL}/v2/tokens/price`, {
                     method: 'POST',
                     headers: {
@@ -85,13 +85,13 @@ class AveAPI {
             const response_json = await response.json();
             
             // Debug: Log the response
-            console.log('Ave API Response:', response_json);
+            // console.log('Ave API Response:', response_json);
             
             // Ave API wraps data in a 'data' object
             const data = response_json.data || response_json;
             
-            console.log('Looking for token ID:', this.dpTokenId);
-            console.log('Available keys:', Object.keys(data));
+            // console.log('Looking for token ID:', this.dpTokenId);
+            // console.log('Available keys:', Object.keys(data));
             
             const dpData = data[this.dpTokenId];
             
@@ -101,7 +101,7 @@ class AveAPI {
                 const dpDataLower = Object.keys(data).find(key => key.toLowerCase() === lowerTokenId);
                 
                 if (dpDataLower) {
-                    console.log('Found DP data with key:', dpDataLower);
+                    // console.log('Found DP data with key:', dpDataLower);
                     return this.formatPriceData(data[dpDataLower]);
                 }
                 
