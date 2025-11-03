@@ -603,6 +603,17 @@ class SwapManager {
         
         console.log('Transaction params:', txParams);
         
+        // Add manual gas limit to avoid estimation issues
+        try {
+            const gasEstimate = await this.signer.estimateGas(txParams);
+            txParams.gasLimit = gasEstimate.mul(120).div(100); // 20% buffer
+            console.log('Gas estimate:', gasEstimate.toString(), 'with buffer:', txParams.gasLimit.toString());
+        } catch (gasError) {
+            console.warn('Gas estimation failed, using manual gas limit:', gasError.message);
+            // Use a high gas limit as fallback
+            txParams.gasLimit = ethers.BigNumber.from('2000000');
+        }
+        
         // Execute transaction
         this.showMessage('Executing swap...', 'info');
         console.log('Sending transaction to wallet...');
@@ -611,12 +622,33 @@ class SwapManager {
         console.log('Transaction sent! Hash:', tx.hash);
         console.log('Full tx object:', tx);
         
-        // Wait for confirmation
+        // Wait for confirmation with timeout
         this.showMessage('Waiting for confirmation...', 'info');
         console.log('Waiting for transaction confirmation...');
         
-        const receipt = await tx.wait();
-        console.log('Transaction confirmed! Receipt:', receipt);
+        // Add timeout for tx.wait() - wait max 60 seconds
+        const receiptPromise = tx.wait();
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Transaction confirmation timeout')), 60000);
+        });
+        
+        let receipt;
+        try {
+            receipt = await Promise.race([receiptPromise, timeoutPromise]);
+            console.log('Transaction confirmed! Receipt:', receipt);
+        } catch (error) {
+            if (error.message === 'Transaction confirmation timeout') {
+                console.warn('Transaction confirmation timeout, checking status...');
+                // Try to get receipt manually
+                receipt = await this.provider.getTransactionReceipt(tx.hash);
+                if (!receipt) {
+                    throw new Error('Transaction is still pending. Please check your wallet or block explorer.');
+                }
+                console.log('Retrieved receipt manually:', receipt);
+            } else {
+                throw error;
+            }
+        }
         
         if (receipt.status === 0) {
             throw new Error('Transaction failed on-chain');
