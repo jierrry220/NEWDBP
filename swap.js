@@ -690,8 +690,8 @@ async function connectWallet() {
                                 symbol: 'BERA',
                                 decimals: 18
                             },
-                            rpcUrls: ['https://bartio.rpc.berachain.com'],
-                            blockExplorerUrls: ['https://beratrail.io']
+                            rpcUrls: ['https://rpc.berachain.com'],
+                            blockExplorerUrls: ['https://berascan.com']
                         }]
                     });
                 } else {
