@@ -121,9 +121,16 @@ class SwapManager {
     
     setupEventListeners() {
         // Amount input change
-        document.getElementById('fromAmount').addEventListener('input', () => {
-            this.handleAmountChange();
-        });
+        const fromAmountInput = document.getElementById('fromAmount');
+        if (fromAmountInput) {
+            fromAmountInput.addEventListener('input', () => {
+                console.log('Input changed, calling handleAmountChange');
+                this.handleAmountChange();
+            });
+            console.log('✓ Event listener attached to fromAmount input');
+        } else {
+            console.error('✗ fromAmount input not found!');
+        }
         
         // MAX button
         document.getElementById('maxFromAmount').addEventListener('click', () => {
@@ -166,6 +173,7 @@ class SwapManager {
     
     async handleAmountChange() {
         const fromAmount = document.getElementById('fromAmount').value;
+        console.log('handleAmountChange called, amount:', fromAmount);
         
         if (!fromAmount || fromAmount === '0' || fromAmount === '' || parseFloat(fromAmount) <= 0) {
             document.getElementById('toAmount').value = '';
@@ -175,8 +183,10 @@ class SwapManager {
         }
         
         try {
+            console.log('Getting quote from Kodiak for amount:', fromAmount);
             // Get quote from Kodiak
             const quote = await this.getQuoteFromKodiak(fromAmount);
+            console.log('Received quote:', quote);
             
             if (quote && quote.amountOut) {
                 const outputAmount = parseFloat(quote.amountOut);
