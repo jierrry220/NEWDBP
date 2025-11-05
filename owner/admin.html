@@ -958,10 +958,18 @@
         const nftM = await withSigner(CONTRACTS.nftMining, NFT_MINING_ABI);
         const v = $('baseDailyReward').value.trim();
         const wei = ethers.utils.parseEther(v || '0');
+        
+        // ✅ V4提示: 修改费率前会自动结算所有用户
+        if (!confirm(`确认修改日产出为 ${v} DP？\n\n✅ V4特性：\n- 修改前会自动结算所有活跃用户的待领奖励\n- 奖励直接发放到用户钱包\n- 然后修改费率\n\n⚠️ Gas消耗可能较高，取决于活跃用户数量。`)) {
+          setMsg('msgNFT', '已取消操作');
+          return;
+        }
+        
+        setMsg('msgNFT', '⚙️ 正在结算所有用户...（请等待）');
         const tx = await nftM.setBaseDailyReward(wei);
-        setMsg('msgNFT', '提交交易中...');
+        setMsg('msgNFT', '⏳ 提交交易中...');
         await tx.wait();
-        setMsg('msgNFT', '基础日产出已更新');
+        setMsg('msgNFT', '✅ 基础日产出已更新，所有用户已自动结算');
         await refreshNFTMining();
       } catch (e) { setMsg('msgNFT', e?.message||String(e), false); }
     };
