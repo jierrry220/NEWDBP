@@ -1,0 +1,6 @@
+# 忽略 owner 文件夹中的所有文件
+*
+
+# 除了这个 .gitignore 和 README.md
+!.gitignore
+!README.md

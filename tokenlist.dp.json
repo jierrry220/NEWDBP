@@ -1,0 +1,16 @@
+{
+  "name": "DP Token List",
+  "logoURI": "ipfs://bafkreif45gecadts4ba5jxdgyigjo7oliatgzaj5hkin55p7sjpwrhyizy",
+  "timestamp": "2025-11-05T04:30:30Z",
+  "version": { "major": 1, "minor": 0, "patch": 0 },
+  "tokens": [
+    {
+      "chainId": 80094,
+      "address": "0xf7C464c7832e59855aa245Ecc7677f54B3460e7d",
+      "name": "DP",
+      "symbol": "DP",
+      "decimals": 18,
+      "logoURI": "ipfs://bafkreif45gecadts4ba5jxdgyigjo7oliatgzaj5hkin55p7sjpwrhyizy"
+    }
+  ]
+}

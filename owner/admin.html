@@ -395,12 +395,43 @@
 
     async function connectWallet() {
       try {
+        console.log('🔵 开始连接钱包...');
         const walletProvider = window.okxwallet || window.ethereum;
-        if (!walletProvider) { alert('请安装 MetaMask / OKX Wallet'); return; }
+        if (!walletProvider) { 
+          console.error('❌ 未检测到钱包');
+          alert('请安装 MetaMask / OKX Wallet'); 
+          return; 
+        }
+        console.log('✅ 检测到钱包:', walletProvider.isMetaMask ? 'MetaMask' : walletProvider.isOKExWallet ? 'OKX' : '未知');
+        
         await walletProvider.request({ method: 'eth_requestAccounts' });
+        console.log('✅ 钱包授权成功');
+        
         provider = new ethers.providers.Web3Provider(walletProvider);
         signer = provider.getSigner();
         user = await signer.getAddress();
+        console.log('✅ 用户地址:', user);
+        
+        // 检查网络
+        const network = await provider.getNetwork();
+        console.log('🌐 当前网络:', {
+          chainId: network.chainId,
+          name: network.name
+        });
+        
+        if (network.chainId !== 80094) {
+          console.warn('⚠️ 网络不匹配! 当前:', network.chainId, '期望: 80094');
+          alert('请切换到 Berachain 主网 (Chain ID: 80094)');
+          return;
+        }
+        console.log('✅ 网络检查通过');
+        
+        // 检查 Gas 价格
+        const feeData = await provider.getFeeData();
+        console.log('⛽ Gas 信息:', {
+          gasPrice: feeData.gasPrice ? ethers.utils.formatUnits(feeData.gasPrice, 'gwei') + ' Gwei' : 'N/A',
+          maxFeePerGas: feeData.maxFeePerGas ? ethers.utils.formatUnits(feeData.maxFeePerGas, 'gwei') + ' Gwei' : 'N/A'
+        });
         $('connectBtn').textContent = '已连接';
         $('connectBtn').disabled = true;
         $('walletAddr').textContent = `${user.slice(0,6)}...${user.slice(-4)}`;
@@ -411,10 +442,18 @@
         $('addrTEngineAddr').textContent = CONTRACTS.tEngine;
         $('addrDPToken').textContent = CONTRACTS.dpToken;
         $('addrDebearPass').textContent = CONTRACTS.debearPass || '未配置';
+        console.log('🔄 开始刷新数据...');
         await refreshAll();
         await refreshPoolBalances();
+        console.log('🎉 钱包连接完成！');
       } catch (e) {
-        console.error(e); alert('连接失败: ' + (e?.message||e));
+        console.error('❌ 连接失败:', e);
+        console.error('错误详情:', {
+          message: e?.message,
+          code: e?.code,
+          stack: e?.stack
+        });
+        alert('连接失败: ' + (e?.message||e));
       }
     }
 
@@ -621,27 +660,73 @@
     // PassSale
     $('btnSetPrices').onclick = async () => {
       try {
+        console.log('🔵 开始设置 Pass 价格...');
         const passSale = await withSigner(CONTRACTS.passSale, PASS_SALE_ABI);
+        console.log('✅ PassSale 合约实例创建成功:', CONTRACTS.passSale);
+        
         const p1 = ethers.utils.parseEther(($('priceStd').value || '0').trim());
         const p2 = ethers.utils.parseEther(($('pricePre').value || '0').trim());
         const p3 = ethers.utils.parseEther(($('priceEx').value || '0').trim());
+        
+        console.log('📊 准备设置价格:', {
+          standard: ethers.utils.formatEther(p1) + ' BERA',
+          premium: ethers.utils.formatEther(p2) + ' BERA',
+          exclusive: ethers.utils.formatEther(p3) + ' BERA'
+        });
+        
+        console.log('🔄 调用 setPrices 函数...');
         const tx = await passSale.setPrices([p1, p2, p3]);
+        console.log('✅ 交易已提交:', tx.hash);
+        
         setMsg('msgPassSale', '提交交易中...');
-        await tx.wait();
+        console.log('⏳ 等待交易确认...');
+        
+        const receipt = await tx.wait();
+        console.log('✅ 交易已确认:', receipt);
+        
         setMsg('msgPassSale', '价格已更新');
         await refreshPassSale();
-      } catch (e) { setMsg('msgPassSale', e?.message||String(e), false); }
+        console.log('🎉 价格更新完成！');
+      } catch (e) { 
+        console.error('❌ 设置价格失败:', e);
+        console.error('错误详情:', {
+          message: e?.message,
+          code: e?.code,
+          reason: e?.reason,
+          data: e?.data,
+          transaction: e?.transaction
+        });
+        setMsg('msgPassSale', e?.message||String(e), false); 
+      }
     };
 
     $('saleActiveSwitch').onchange = async (e) => {
       try {
+        console.log('🔵 更改销售状态:', e.target.checked ? '开启' : '关闭');
         const passSale = await withSigner(CONTRACTS.passSale, PASS_SALE_ABI);
+        console.log('✅ PassSale 合约实例创建成功');
+        
+        console.log('🔄 调用 setSaleActive 函数...');
         const tx = await passSale.setSaleActive(e.target.checked);
+        console.log('✅ 交易已提交:', tx.hash);
+        
         setMsg('msgPassSale', '提交交易中...');
-        await tx.wait();
+        const receipt = await tx.wait();
+        console.log('✅ 交易已确认:', receipt);
+        
         setMsg('msgPassSale', '销售状态已更新');
         await refreshPassSale();
-      } catch (e2) { setMsg('msgPassSale', e2?.message||String(e2), false); await refreshPassSale(); }
+      } catch (e2) { 
+        console.error('❌ 更改销售状态失败:', e2);
+        console.error('错误详情:', {
+          message: e2?.message,
+          code: e2?.code,
+          reason: e2?.reason,
+          data: e2?.data
+        });
+        setMsg('msgPassSale', e2?.message||String(e2), false); 
+        await refreshPassSale(); 
+      }
     };
 
     // NFT Mining
@@ -1041,6 +1126,14 @@
 
     // Bind connect button
     $('connectBtn').onclick = connectWallet;
+    
+    // 页面初始化
+    console.log('%c🛠️ Debear Party - Owner 控制台', 'color: #4f46e5; font-size: 20px; font-weight: bold;');
+    console.log('%c✅ 控制台调试已启用', 'color: #10b981; font-weight: bold;');
+    console.log('📊 合约地址:');
+    console.table(CONTRACTS);
+    console.log('💡 请点击 "连接钱包" 按钮开始使用');
+    console.log('🔍 如果遇到问题，请查看详细的控制台日志');
   </script>
 </body>
 </html>
