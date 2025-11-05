@@ -122,6 +122,30 @@
       <div class="card">
         <h2>🎫 Pass 销售</h2>
         <div class="muted" style="margin-bottom:8px;">合约: <span id="addrPassSale"></span></div>
+        
+        <!-- 💡 建议价格 -->
+        <div style="background:#1e293b; border:1px solid #374151; border-radius:8px; padding:10px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-size:13px; color:#9ca3af;">💡 建议价格（基于 BERA 实时价格）</span>
+            <button class="btn" id="btnRefreshBeraPrice" style="padding:4px 10px; font-size:12px;">🔄 刷新</button>
+          </div>
+          <div id="beraPrice" style="font-size:12px; color:#fbbf24; margin-bottom:6px;">加载中...</div>
+          <div style="display:flex; gap:8px; font-size:12px;">
+            <div style="flex:1; text-align:center;">
+              <div style="color:#9ca3af;">Standard ($800)</div>
+              <div id="suggestStd" style="color:#86efac; font-weight:600;">--</div>
+            </div>
+            <div style="flex:1; text-align:center;">
+              <div style="color:#9ca3af;">Premium ($3000)</div>
+              <div id="suggestPre" style="color:#86efac; font-weight:600;">--</div>
+            </div>
+            <div style="flex:1; text-align:center;">
+              <div style="color:#9ca3af;">Exclusive ($6600)</div>
+              <div id="suggestEx" style="color:#86efac; font-weight:600;">--</div>
+            </div>
+          </div>
+        </div>
+        
         <div class="group">
           <label>价格（BERA）</label>
           <div class="row">
@@ -388,10 +412,81 @@
     ];
 
     let provider, signer, user;
+    let cachedBeraPrice = null;
+    let lastPriceFetchTime = 0;
 
     // UI helpers
     const $ = (id) => document.getElementById(id);
     const setMsg = (id, text, ok=true) => { $(id).textContent = text; $(id).style.color = ok ? '#86efac' : '#fca5a5'; };
+    
+    // 💡 获取 BERA 价格（使用 CoinGecko API）
+    async function fetchBeraPrice() {
+      try {
+        // 缓存 5 分钟
+        const now = Date.now();
+        if (cachedBeraPrice && (now - lastPriceFetchTime) < 300000) {
+          console.log('💾 使用缓存的 BERA 价格:', cachedBeraPrice);
+          return cachedBeraPrice;
+        }
+        
+        console.log('🔄 从 CoinGecko 获取 BERA 价格...');
+        $('beraPrice').textContent = '🔄 获取价格中...';
+        
+        // CoinGecko API
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=berachain-bera&vs_currencies=usd', {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API 请求失败: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const price = data['berachain-bera']?.usd;
+        
+        if (!price) {
+          throw new Error('未能获取 BERA 价格');
+        }
+        
+        cachedBeraPrice = price;
+        lastPriceFetchTime = now;
+        console.log('✅ BERA 价格:', price, 'USD');
+        return price;
+      } catch (error) {
+        console.error('❌ 获取 BERA 价格失败:', error);
+        $('beraPrice').textContent = `❌ 获取失败: ${error.message}`;
+        $('beraPrice').style.color = '#fca5a5';
+        return null;
+      }
+    }
+    
+    // 📊 计算并显示建议价格
+    async function updateSuggestedPrices() {
+      const beraPrice = await fetchBeraPrice();
+      
+      if (!beraPrice) {
+        $('suggestStd').textContent = '--';
+        $('suggestPre').textContent = '--';
+        $('suggestEx').textContent = '--';
+        return;
+      }
+      
+      // 显示 BERA 当前价格
+      $('beraPrice').textContent = `BERA 当前价格: $${beraPrice.toFixed(4)} USD`;
+      $('beraPrice').style.color = '#fbbf24';
+      
+      // 计算建议价格
+      const stdBera = (800 / beraPrice).toFixed(2);
+      const preBera = (3000 / beraPrice).toFixed(2);
+      const exBera = (6600 / beraPrice).toFixed(2);
+      
+      $('suggestStd').textContent = `${stdBera} BERA`;
+      $('suggestPre').textContent = `${preBera} BERA`;
+      $('suggestEx').textContent = `${exBera} BERA`;
+      
+      console.log('💡 建议价格:', { stdBera, preBera, exBera });
+    }
 
     async function connectWallet() {
       try {
@@ -445,6 +540,7 @@
         console.log('🔄 开始刷新数据...');
         await refreshAll();
         await refreshPoolBalances();
+        await updateSuggestedPrices();  // 💡 加载建议价格
         console.log('🎉 钱包连接完成！');
       } catch (e) {
         console.error('❌ 连接失败:', e);
@@ -661,8 +757,14 @@
     $('btnSetPrices').onclick = async () => {
       try {
         console.log('🔵 开始设置 Pass 价格...');
+        setMsg('msgPassSale', '准备中...');
+        
         const passSale = await withSigner(CONTRACTS.passSale, PASS_SALE_ABI);
         console.log('✅ PassSale 合约实例创建成功:', CONTRACTS.passSale);
+        
+        // 检查是否有 signer
+        const signerAddr = await signer.getAddress();
+        console.log('🔑 Signer 地址:', signerAddr);
         
         const p1 = ethers.utils.parseEther(($('priceStd').value || '0').trim());
         const p2 = ethers.utils.parseEther(($('pricePre').value || '0').trim());
@@ -674,17 +776,48 @@
           exclusive: ethers.utils.formatEther(p3) + ' BERA'
         });
         
-        console.log('🔄 调用 setPrices 函数...');
-        const tx = await passSale.setPrices([p1, p2, p3]);
-        console.log('✅ 交易已提交:', tx.hash);
+        // 先估算 Gas
+        console.log('⛽ 估算 Gas...');
+        try {
+          const gasEstimate = await passSale.estimateGas.setPrices([p1, p2, p3]);
+          console.log('✅ Gas 估算:', gasEstimate.toString());
+        } catch (gasError) {
+          console.error('❌ Gas 估算失败:', gasError);
+          throw new Error('Gas 估算失败，可能不是 Owner 或合约方法不存在: ' + (gasError.reason || gasError.message));
+        }
         
-        setMsg('msgPassSale', '提交交易中...');
+        console.log('🔄 调用 setPrices 函数...');
+        setMsg('msgPassSale', '等待钱包确认...');
+        
+        // 手动构建交易参数
+        const txOptions = {
+          gasLimit: 50000  // 手动设置 Gas Limit
+        };
+        console.log('📝 交易参数:', txOptions);
+        
+        console.log('💡 即将调用 passSale.setPrices...');
+        let txPromise;
+        try {
+          txPromise = passSale.setPrices([p1, p2, p3], txOptions);
+          console.log('✅ txPromise 创建成功');
+        } catch (callError) {
+          console.error('❌ 调用 setPrices 失败:', callError);
+          throw callError;
+        }
+        
+        const tx = await Promise.race([
+          txPromise,
+          new Promise((_, reject) => setTimeout(() => reject(new Error('交易超时（60秒），请检查钱包是否弹出确认窗口')), 60000))
+        ]);
+        
+        console.log('✅ 交易已提交:', tx.hash);
+        setMsg('msgPassSale', `交易已提交: ${tx.hash.slice(0,10)}...`);
         console.log('⏳ 等待交易确认...');
         
         const receipt = await tx.wait();
         console.log('✅ 交易已确认:', receipt);
         
-        setMsg('msgPassSale', '价格已更新');
+        setMsg('msgPassSale', '✅ 价格已更新');
         await refreshPassSale();
         console.log('🎉 价格更新完成！');
       } catch (e) { 
@@ -696,25 +829,66 @@
           data: e?.data,
           transaction: e?.transaction
         });
-        setMsg('msgPassSale', e?.message||String(e), false); 
+        
+        let errorMsg = e?.message || String(e);
+        if (e?.code === 4001) errorMsg = '用户拒绝了交易';
+        if (e?.code === -32603) errorMsg = '交易执行失败: ' + (e?.data?.message || e?.reason || '未知错误');
+        if (e?.code === 'UNPREDICTABLE_GAS_LIMIT') errorMsg = 'Gas 估算失败，请检查是否有 Owner 权限';
+        
+        setMsg('msgPassSale', '❌ ' + errorMsg, false); 
       }
     };
 
     $('saleActiveSwitch').onchange = async (e) => {
+      const targetState = e.target.checked;
       try {
-        console.log('🔵 更改销售状态:', e.target.checked ? '开启' : '关闭');
+        console.log('🔵 更改销售状态:', targetState ? '开启' : '关闭');
+        setMsg('msgPassSale', '准备中...');
+        
         const passSale = await withSigner(CONTRACTS.passSale, PASS_SALE_ABI);
         console.log('✅ PassSale 合约实例创建成功');
         
-        console.log('🔄 调用 setSaleActive 函数...');
-        const tx = await passSale.setSaleActive(e.target.checked);
-        console.log('✅ 交易已提交:', tx.hash);
+        // 先估算 Gas
+        console.log('⛽ 估算 Gas...');
+        try {
+          const gasEstimate = await passSale.estimateGas.setSaleActive(targetState);
+          console.log('✅ Gas 估算:', gasEstimate.toString());
+        } catch (gasError) {
+          console.error('❌ Gas 估算失败:', gasError);
+          throw new Error('Gas 估算失败，可能不是 Owner 或合约方法不存在: ' + (gasError.reason || gasError.message));
+        }
         
-        setMsg('msgPassSale', '提交交易中...');
+        console.log('🔄 调用 setSaleActive 函数...');
+        setMsg('msgPassSale', '等待钱包确认...');
+        
+        // 手动构建交易参数
+        const txOptions = {
+          gasLimit: 50000
+        };
+        console.log('📝 交易参数:', txOptions);
+        
+        console.log('💡 即将调用 passSale.setSaleActive...');
+        let txPromise;
+        try {
+          txPromise = passSale.setSaleActive(targetState, txOptions);
+          console.log('✅ txPromise 创建成功');
+        } catch (callError) {
+          console.error('❌ 调用 setSaleActive 失败:', callError);
+          throw callError;
+        }
+        
+        const tx = await Promise.race([
+          txPromise,
+          new Promise((_, reject) => setTimeout(() => reject(new Error('交易超时（60秒），请检查钱包是否弹出确认窗口')), 60000))
+        ]);
+        
+        console.log('✅ 交易已提交:', tx.hash);
+        setMsg('msgPassSale', `交易已提交: ${tx.hash.slice(0,10)}...`);
+        
         const receipt = await tx.wait();
         console.log('✅ 交易已确认:', receipt);
         
-        setMsg('msgPassSale', '销售状态已更新');
+        setMsg('msgPassSale', '✅ 销售状态已更新');
         await refreshPassSale();
       } catch (e2) { 
         console.error('❌ 更改销售状态失败:', e2);
@@ -724,7 +898,15 @@
           reason: e2?.reason,
           data: e2?.data
         });
-        setMsg('msgPassSale', e2?.message||String(e2), false); 
+        
+        let errorMsg = e2?.message || String(e2);
+        if (e2?.code === 4001) errorMsg = '用户拒绝了交易';
+        if (e2?.code === -32603) errorMsg = '交易执行失败: ' + (e2?.data?.message || e2?.reason || '未知错误');
+        if (e2?.code === 'UNPREDICTABLE_GAS_LIMIT') errorMsg = 'Gas 估算失败，请检查是否有 Owner 权限';
+        
+        setMsg('msgPassSale', '❌ ' + errorMsg, false);
+        // 恢复开关状态
+        e.target.checked = !targetState;
         await refreshPassSale(); 
       }
     };
@@ -1126,6 +1308,12 @@
 
     // Bind connect button
     $('connectBtn').onclick = connectWallet;
+    
+    // 🔄 刷新 BERA 价格按钮
+    $('btnRefreshBeraPrice').onclick = async () => {
+      cachedBeraPrice = null;  // 清空缓存
+      await updateSuggestedPrices();
+    };
     
     // 页面初始化
     console.log('%c🛠️ Debear Party - Owner 控制台', 'color: #4f46e5; font-size: 20px; font-weight: bold;');
