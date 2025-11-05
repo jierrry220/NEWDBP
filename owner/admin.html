@@ -419,7 +419,7 @@
     const $ = (id) => document.getElementById(id);
     const setMsg = (id, text, ok=true) => { $(id).textContent = text; $(id).style.color = ok ? '#86efac' : '#fca5a5'; };
     
-    // 💡 获取 BERA 价格（使用 CoinGecko API）
+    // 💡 获取 BERA 价格（使用多个 API 备用）
     async function fetchBeraPrice() {
       try {
         // 缓存 5 分钟
@@ -429,24 +429,54 @@
           return cachedBeraPrice;
         }
         
-        console.log('🔄 从 CoinGecko 获取 BERA 价格...');
+        console.log('🔄 获取 BERA 价格...');
         $('beraPrice').textContent = '🔄 获取价格中...';
         
-        // CoinGecko API
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=berachain-bera&vs_currencies=usd', {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' }
-        });
+        // 尝试多个 API
+        const apis = [
+          // 1. CoinGecko 直接访问
+          async () => {
+            const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=berachain-bera&vs_currencies=usd');
+            const data = await res.json();
+            return data['berachain-bera']?.usd;
+          },
+          // 2. 使用 CORS 代理
+          async () => {
+            const res = await fetch('https://api.allorigins.win/get?url=' + encodeURIComponent('https://api.coingecko.com/api/v3/simple/price?ids=berachain-bera&vs_currencies=usd'));
+            const data = await res.json();
+            const priceData = JSON.parse(data.contents);
+            return priceData['berachain-bera']?.usd;
+          },
+          // 3. 备用：手动输入价格
+          async () => {
+            throw new Error('所有 API 均失败');
+          }
+        ];
         
-        if (!response.ok) {
-          throw new Error(`API 请求失败: ${response.status}`);
+        let price = null;
+        let lastError = null;
+        
+        for (let i = 0; i < apis.length; i++) {
+          try {
+            console.log(`🔄 尝试 API ${i + 1}...`);
+            price = await Promise.race([
+              apis[i](),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('超时')), 10000))
+            ]);
+            
+            if (price && price > 0) {
+              console.log(`✅ API ${i + 1} 成功:`, price, 'USD');
+              break;
+            }
+          } catch (error) {
+            console.warn(`❌ API ${i + 1} 失败:`, error.message);
+            lastError = error;
+            continue;
+          }
         }
         
-        const data = await response.json();
-        const price = data['berachain-bera']?.usd;
-        
-        if (!price) {
-          throw new Error('未能获取 BERA 价格');
+        if (!price || price <= 0) {
+          throw lastError || new Error('未能获取 BERA 价格');
         }
         
         cachedBeraPrice = price;
@@ -457,6 +487,17 @@
         console.error('❌ 获取 BERA 价格失败:', error);
         $('beraPrice').textContent = `❌ 获取失败: ${error.message}`;
         $('beraPrice').style.color = '#fca5a5';
+        
+        // 提供手动输入选项
+        const manualPrice = prompt('自动获取失败，请手动输入 BERA 当前 USD 价格（例: 1.5）：');
+        if (manualPrice && !isNaN(manualPrice) && parseFloat(manualPrice) > 0) {
+          const price = parseFloat(manualPrice);
+          cachedBeraPrice = price;
+          lastPriceFetchTime = now;
+          console.log('👤 使用手动输入的价格:', price);
+          return price;
+        }
+        
         return null;
       }
     }
