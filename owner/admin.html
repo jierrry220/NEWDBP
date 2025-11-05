@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <script src="../js/disable-console.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Debear Party - Owner 控制台</title>
@@ -326,7 +325,7 @@
       'function setTaxConfig(uint256,address)',
       'function taxRate() view returns (uint256)',
       'function taxRecipient() view returns (address)',
-      'function totalClaimed() view returns (uint256)',
+      // ❌ V3 改为需要参数: 'function totalClaimed(address) view returns (uint256)',
       'function owner() view returns (address)'
     ];
 
@@ -490,38 +489,31 @@
         const nftM = new ethers.Contract(CONTRACTS.nftMining, NFT_MINING_ABI, provider);
         
         // 尝试读取 V2 新增方法
-        let base, paused, rate, recip, claimed;
+        let base, paused, rate, recip;
         try {
-          [base, paused, rate, recip, claimed] = await Promise.all([
+          [base, paused, rate, recip] = await Promise.all([
             nftM.baseDailyReward(),
             nftM.miningPaused(),
             nftM.taxRate(),
-            nftM.taxRecipient(),
-            nftM.totalClaimed()
+            nftM.taxRecipient()
+            // ❌ V3 totalClaimed 改为需要 address 参数,已移除
           ]);
         } catch (v2Error) {
-          console.warn('NFTMiningV2 部分方法不存在，可能未完全升级:', v2Error);
-          // 尝试单独读取基础方法
-          try {
-            base = await nftM.baseDailyReward();
-            paused = await nftM.miningPaused();
-            rate = await nftM.taxRate();
-            recip = await nftM.taxRecipient();
-            claimed = null; // V2 新增，可能不存在
-          } catch (fallbackError) {
-            throw new Error('合约方法调用失败，请检查合约是否已部署/升级');
-          }
+          console.warn('NFTMining 部分方法不存在，可能未完全升级:', v2Error);
+          throw new Error('合约方法调用失败，请检查合约是否已部署/升级');
         }
         
         const fmtBig = (bn)=> parseFloat(ethers.utils.formatEther(bn)).toLocaleString('en-US', {maximumFractionDigits:0});
         $('currBaseDaily').textContent = `${parseFloat(ethers.utils.formatEther(base)).toFixed(0)} DP/天`;
         $('currMiningPaused').textContent = paused ? '已暂停' : '运行中';
         $('miningPausedSwitch').checked = !!paused;
-        $('currNftTax').textContent = `${rate.toString()}% / ${recip && recip !== ethers.constants.AddressZero ? recip : '未设置'}`;
-        $('currNftClaimed').textContent = claimed !== null ? `${fmtBig(claimed)} DP` : '需升级';
+        // 修复：检查 recip 是否为空字符串或零地址
+        const validRecip = recip && recip !== '' && recip !== ethers.constants.AddressZero ? recip : '未设置';
+        $('currNftTax').textContent = `${rate.toString()}% / ${validRecip}`;
+        $('currNftClaimed').textContent = 'V3 不支持全局统计';
         if (!$('baseDailyReward').value) $('baseDailyReward').value = parseFloat(ethers.utils.formatEther(base)).toFixed(0);
         if (!$('nftTaxRate').value) $('nftTaxRate').value = rate.toString();
-        if (!$('nftTaxRecipient').value && recip && recip !== ethers.constants.AddressZero) $('nftTaxRecipient').value = recip;
+        if (!$('nftTaxRecipient').value && recip && recip !== '' && recip !== ethers.constants.AddressZero) $('nftTaxRecipient').value = recip;
       } catch (e) { setMsg('msgNFT', '读取失败: ' + (e?.message||e), false); }
     }
 
