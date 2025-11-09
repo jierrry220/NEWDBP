@@ -304,9 +304,22 @@ module.exports = async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const type = url.searchParams.get('type'); // nft-claims | tengine-deposits | tengine-claims
   const fromBlockParam = url.searchParams.get('fromBlock');
-  const fromBlock = fromBlockParam ? parseInt(fromBlockParam, 10) : null; // null = 自动计算
+  const fromBlockOffsetParam = url.searchParams.get('fromBlockOffset'); // 支持分批查询
   const toBlock = url.searchParams.get('toBlock') || 'latest';
   const limit = parseInt(url.searchParams.get('limit') || '100', 10);
+  
+  // 处理 fromBlock: 如果有 fromBlockOffset, 则计算 fromBlock
+  let fromBlock = null;
+  if (fromBlockParam) {
+    fromBlock = parseInt(fromBlockParam, 10);
+  } else if (fromBlockOffsetParam) {
+    // 获取当前区块，然后减去 offset
+    const provider = getProvider();
+    const latestBlock = await provider.getBlockNumber();
+    const offset = parseInt(fromBlockOffsetParam, 10);
+    fromBlock = Math.max(0, latestBlock - offset);
+    console.log(`📊 分批查询: latestBlock=${latestBlock}, offset=${offset}, fromBlock=${fromBlock}`);
+  }
 
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Cache-Control', 'public, max-age=30');

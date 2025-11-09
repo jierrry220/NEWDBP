@@ -1401,91 +1401,107 @@
       } catch (e) { setMsg('msgTEnginePool', e?.message||String(e), false); }
     }
 
-    // 📊 矿池流水数据加载函数
-    async function loadNFTClaims() {
+    // 📊 矿池流水数据加载函数 - 支持自动分批加载
+    let nftClaimsAllData = []; // 存储所有批次的数据
+    let nftClaimsBatchCount = 0; // 已加载批次数
+    const MAX_BATCHES = 30; // 最多 30 批次 (30 * 9900 区块 = 7.7天)
+    
+    async function loadNFTClaimsBatch() {
       try {
-        const container = $('nftClaimsContainer');
-        container.innerHTML = '<div style="padding:20px; text-align:center; color:#6b7280;">🔄 加载中...</div>';
-        
-        const res = await fetch('/api/pool-flows?type=nft-claims&limit=500');
+        const fromBlockOffset = nftClaimsBatchCount * 9900;
+        const res = await fetch(`/api/pool-flows?type=nft-claims&limit=10000&fromBlockOffset=${fromBlockOffset}`);
         const json = await res.json();
         
-        if (!json.success) {
-          throw new Error(json.error || '加载失败');
+        if (!json.success || !json.data || json.data.length === 0) {
+          console.log(`✅ 批次 ${nftClaimsBatchCount + 1}: 没有更多数据`);
+          return false;
         }
         
-        const data = json.data || [];
+        // 去重：使用 txHash 作为唯一标识
+        const existingHashes = new Set(nftClaimsAllData.map(r => r.txHash));
+        const newRecords = json.data.filter(r => !existingHashes.has(r.txHash));
         
-        if (data.length === 0) {
-          container.innerHTML = '<div style="padding:20px; text-align:center; color:#6b7280;">暂无记录</div>';
-          $('nftClaimsStats').textContent = '总计：0 笔';
-          return;
+        nftClaimsAllData.push(...newRecords);
+        nftClaimsBatchCount++;
+        
+        console.log(`✅ 批次 ${nftClaimsBatchCount}: 加载 ${newRecords.length} 条记录，总计 ${nftClaimsAllData.length} 条`);
+        renderNFTClaims();
+        
+        // 如果未达到最大批次，3秒后继续加载
+        if (nftClaimsBatchCount < MAX_BATCHES) {
+          setTimeout(loadNFTClaimsBatch, 3000);
+        } else {
+          console.log('✅ 已达到最大批次，停止加载');
         }
         
-        // 按日期分组
-        const groupedByDate = {};
-        data.forEach(record => {
-          const date = new Date(record.timestamp * 1000);
-          const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
-          if (!groupedByDate[dateKey]) {
-            groupedByDate[dateKey] = [];
-          }
-          groupedByDate[dateKey].push(record);
-        });
+        return true;
+      } catch (error) {
+        console.error(`❌ 批次 ${nftClaimsBatchCount + 1} 加载失败:`, error);
+        return false;
+      }
+    }
+    
+    function renderNFTClaims() {
+      const container = $('nftClaimsContainer');
+      
+      if (nftClaimsAllData.length === 0) {
+        container.innerHTML = '<div style="padding:20px; text-align:center; color:#6b7280;">暂无记录</div>';
+        $('nftClaimsStats').textContent = '总计：0 笔';
+        return;
+      }
+      
+      // 按日期分组
+      const groupedByDate = {};
+      nftClaimsAllData.forEach(record => {
+        const dateKey = new Date(record.timestamp * 1000).toISOString().split('T')[0];
+        if (!groupedByDate[dateKey]) groupedByDate[dateKey] = [];
+        groupedByDate[dateKey].push(record);
+      });
+      
+      const sortedDates = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a));
+      let totalCount = 0, totalAmount = 0;
+      
+      const html = sortedDates.map(dateKey => {
+        const records = groupedByDate[dateKey];
+        const dayName = ['\u5468\u65e5', '\u5468\u4e00', '\u5468\u4e8c', '\u5468\u4e09', '\u5468\u56db', '\u5468\u4e94', '\u5468\u516d'][new Date(dateKey).getDay()];
+        let dayTotal = 0;
         
-        // 排序日期（最新在前）
-        const sortedDates = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a));
-        
-        let totalCount = 0;
-        let totalAmount = 0;
-        
-        const html = sortedDates.map(dateKey => {
-          const records = groupedByDate[dateKey];
-          const dateObj = new Date(dateKey);
-          const dayName = ['\u5468\u65e5', '\u5468\u4e00', '\u5468\u4e8c', '\u5468\u4e09', '\u5468\u56db', '\u5468\u4e94', '\u5468\u516d'][dateObj.getDay()];
-          
-          let dayTotal = 0;
-          const rows = records.map(record => {
-            const amount = parseFloat(record.amount);
-            dayTotal += amount;
-            totalCount++;
-            totalAmount += amount;
-            
-            const time = new Date(record.timestamp * 1000);
-            const timeStr = time.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const explorerUrl = `https://berascan.com/tx/${record.txHash}`;
-            
-            return `
-              <div style="display:flex; align-items:center; padding:8px; border-bottom:1px solid #1f2937; font-size:12px;">
-                <div style="flex:0 0 80px; color:#9ca3af;">${timeStr}</div>
-                <div style="flex:1; font-family:monospace; color:#93c5fd;">${record.to.slice(0,6)}...${record.to.slice(-4)}</div>
-                <div style="flex:0 0 120px; text-align:right; color:#fbbf24; font-weight:600;">${amount.toLocaleString()} DP</div>
-                <div style="flex:0 0 40px; text-align:center;"><a href="${explorerUrl}" target="_blank" style="color:#60a5fa; text-decoration:none;">🔗</a></div>
-              </div>
-            `;
-          }).join('');
-          
-          return `
-            <div style="margin-bottom:16px;">
-              <div style="background:#0f172a; padding:10px; border-radius:8px 8px 0 0; border-bottom:2px solid #3b82f6;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <div style="font-size:14px; font-weight:600; color:#93c5fd;">📅 ${dateKey} (${dayName})</div>
-                  <div style="font-size:13px; color:#9ca3af;">${records.length} 笔 | ${dayTotal.toLocaleString()} DP</div>
-                </div>
-              </div>
-              <div style="background:#111827; border-radius:0 0 8px 8px;">
-                ${rows}
-              </div>
-            </div>
-          `;
+        const rows = records.map(record => {
+          const amount = parseFloat(record.amount);
+          dayTotal += amount;
+          totalCount++;
+          totalAmount += amount;
+          const timeStr = new Date(record.timestamp * 1000).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          const explorerUrl = `https://berascan.com/tx/${record.txHash}`;
+          return `<div style="display:flex; align-items:center; padding:8px; border-bottom:1px solid #1f2937; font-size:12px;">
+            <div style="flex:0 0 80px; color:#9ca3af;">${timeStr}</div>
+            <div style="flex:1; font-family:monospace; color:#93c5fd;">${record.to.slice(0,6)}...${record.to.slice(-4)}</div>
+            <div style="flex:0 0 120px; text-align:right; color:#fbbf24; font-weight:600;">${amount.toLocaleString()} DP</div>
+            <div style="flex:0 0 40px; text-align:center;"><a href="${explorerUrl}" target="_blank" style="color:#60a5fa; text-decoration:none;">🔗</a></div>
+          </div>`;
         }).join('');
         
-        container.innerHTML = html;
-        $('nftClaimsStats').textContent = `总计：${totalCount} 笔 | 总额：${totalAmount.toLocaleString()} DP`;
-      } catch (error) {
-        console.error('加载 NFT claims 失败:', error);
-        $('nftClaimsContainer').innerHTML = `<div style="padding:20px; text-align:center; color:#ef4444;">❌ 加载失败: ${error.message}</div>`;
-      }
+        return `<div style="margin-bottom:16px;">
+          <div style="background:#0f172a; padding:10px; border-radius:8px 8px 0 0; border-bottom:2px solid #3b82f6;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-size:14px; font-weight:600; color:#93c5fd;">📅 ${dateKey} (${dayName})</div>
+              <div style="font-size:13px; color:#9ca3af;">${records.length} 笔 | ${dayTotal.toLocaleString()} DP</div>
+            </div>
+          </div>
+          <div style="background:#111827; border-radius:0 0 8px 8px;">${rows}</div>
+        </div>`;
+      }).join('');
+      
+      const loadingInfo = nftClaimsBatchCount < MAX_BATCHES ? `<div style="padding:10px; text-align:center; color:#9ca3af; font-size:12px;">🔄 正在加载更多数据... (批次 ${nftClaimsBatchCount}/${MAX_BATCHES})</div>` : '';
+      container.innerHTML = html + loadingInfo;
+      $('nftClaimsStats').textContent = `总计：${totalCount} 笔 | 总额：${totalAmount.toLocaleString()} DP`;
+    }
+    
+    async function loadNFTClaims() {
+      nftClaimsAllData = [];
+      nftClaimsBatchCount = 0;
+      $('nftClaimsContainer').innerHTML = '<div style="padding:20px; text-align:center; color:#6b7280;">🔄 加载中...</div>';
+      await loadNFTClaimsBatch();
     }
     
     async function loadTEngineDeposits() {
