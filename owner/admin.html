@@ -309,15 +309,11 @@
     <!-- 矿池流水记录 -->
     <div class="card" style="background:#1e293b; border:2px solid #3b82f6;">
       <h2 style="color:#93c5fd;">📊 NFT 矿池流出记录（用户 Claim）</h2>
-      <div class="row" style="margin-bottom:12px; gap:8px; flex-wrap:wrap;">
+      <div class="row" style="margin-bottom:12px; gap:8px;">
         <button class="btn secondary" id="btnRefreshNFTClaims">🔄 刷新</button>
-        <div style="display:flex; gap:4px; background:#111827; border-radius:8px; padding:2px;">
-          <button class="btn" id="btnNFTViewList" style="padding:6px 12px; font-size:12px; background:#4f46e5;">详细列表</button>
-          <button class="btn" id="btnNFTViewDaily" style="padding:6px 12px; font-size:12px; background:#374151;">日汇总</button>
-        </div>
         <span class="muted" style="flex:1">NFT 矿池：<span style="font-family:monospace; font-size:11px;">0x0D9b...2097</span></span>
       </div>
-      <div id="nftClaimsListView" style="max-height:400px; overflow-y:auto; border:1px solid #374151; border-radius:8px;">
+      <div style="max-height:400px; overflow-y:auto; border:1px solid #374151; border-radius:8px;">
         <table style="width:100%; border-collapse:collapse; font-size:13px;">
           <thead style="position:sticky; top:0; background:#1e293b; z-index:1;">
             <tr style="border-bottom:2px solid #374151;">
@@ -332,9 +328,6 @@
           </tbody>
         </table>
       </div>
-      <div id="nftClaimsDailyView" style="display:none; border:1px solid #374151; border-radius:8px; padding:12px;">
-        <div id="nftClaimsDailyContent">加载中...</div>
-      </div>
       <div class="muted" style="margin-top:8px;" id="nftClaimsStats">总计：--</div>
     </div>
 
@@ -342,15 +335,11 @@
       <!-- T-Engine 投入记录 -->
       <div class="card" style="background:#1e293b; border:2px solid #a78bfa;">
         <h2 style="color:#c4b5fd;">⛏️ T-Engine 投入记录（Deposit）</h2>
-        <div class="row" style="margin-bottom:12px; gap:8px; flex-wrap:wrap;">
+        <div class="row" style="margin-bottom:12px; gap:8px;">
           <button class="btn secondary" id="btnRefreshTEngineDeposits" style="background:#a78bfa;">🔄 刷新</button>
-          <div style="display:flex; gap:4px; background:#111827; border-radius:8px; padding:2px;">
-            <button class="btn" id="btnTEngineDepositViewList" style="padding:6px 12px; font-size:12px; background:#a78bfa;">详细列表</button>
-            <button class="btn" id="btnTEngineDepositViewDaily" style="padding:6px 12px; font-size:12px; background:#374151;">日汇总</button>
-          </div>
           <span class="muted" style="flex:1">T-Engine：<span style="font-family:monospace; font-size:11px;">0xd966...81D8</span></span>
         </div>
-        <div id="tEngineDepositsListView" style="max-height:400px; overflow-y:auto; border:1px solid #374151; border-radius:8px;">
+        <div style="max-height:400px; overflow-y:auto; border:1px solid #374151; border-radius:8px;">
           <table style="width:100%; border-collapse:collapse; font-size:13px;">
             <thead style="position:sticky; top:0; background:#1e293b; z-index:1;">
               <tr style="border-bottom:2px solid #374151;">
@@ -365,24 +354,17 @@
             </tbody>
           </table>
         </div>
-        <div id="tEngineDepositsDailyView" style="display:none; border:1px solid #374151; border-radius:8px; padding:12px;">
-          <div id="tEngineDepositsDailyContent">加载中...</div>
-        </div>
         <div class="muted" style="margin-top:8px;" id="tEngineDepositsStats">总计：--</div>
       </div>
 
       <!-- T-Engine Claim 记录 -->
       <div class="card" style="background:#1e293b; border:2px solid #10b981;">
         <h2 style="color:#6ee7b7;">⛏️ T-Engine 领取记录（Claim）</h2>
-        <div class="row" style="margin-bottom:12px; gap:8px; flex-wrap:wrap;">
+        <div class="row" style="margin-bottom:12px; gap:8px;">
           <button class="btn secondary" id="btnRefreshTEngineClaims">🔄 刷新</button>
-          <div style="display:flex; gap:4px; background:#111827; border-radius:8px; padding:2px;">
-            <button class="btn" id="btnTEngineClaimViewList" style="padding:6px 12px; font-size:12px; background:#10b981;">详细列表</button>
-            <button class="btn" id="btnTEngineClaimViewDaily" style="padding:6px 12px; font-size:12px; background:#374151;">日汇总</button>
-          </div>
           <span class="muted" style="flex:1">T-Engine：<span style="font-family:monospace; font-size:11px;">0xd966...81D8</span></span>
         </div>
-        <div id="tEngineClaimsListView" style="max-height:400px; overflow-y:auto; border:1px solid #374151; border-radius:8px;">
+        <div style="max-height:400px; overflow-y:auto; border:1px solid #374151; border-radius:8px;">
           <table style="width:100%; border-collapse:collapse; font-size:13px;">
             <thead style="position:sticky; top:0; background:#1e293b; z-index:1;">
               <tr style="border-bottom:2px solid #374151;">
@@ -396,9 +378,6 @@
               <tr><td colspan="4" style="padding:20px; text-align:center; color:#6b7280;">加载中...</td></tr>
             </tbody>
           </table>
-        </div>
-        <div id="tEngineClaimsDailyView" style="display:none; border:1px solid #374151; border-radius:8px; padding:12px;">
-          <div id="tEngineClaimsDailyContent">加载中...</div>
         </div>
         <div class="muted" style="margin-top:8px;" id="tEngineClaimsStats">总计：--</div>
       </div>
@@ -1464,7 +1443,7 @@
         const tbody = $('nftClaimsTableBody');
         tbody.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center; color:#6b7280;">🔄 加载中...</td></tr>';
         
-        const res = await fetch('/api/pool-flows?type=nft-claims&limit=200');
+        const res = await fetch('/api/pool-flows?type=nft-claims&limit=50');
         const json = await res.json();
         
         if (!json.success) {
@@ -1504,88 +1483,12 @@
       }
     }
     
-    async function loadNFTClaimsDaily() {
-      try {
-        const container = $('nftClaimsDailyContent');
-        container.innerHTML = '🔄 加载中...';
-        
-        const res = await fetch('/api/pool-flows?type=nft-claims&view=daily&days=7&limit=500');
-        const json = await res.json();
-        
-        if (!json.success) {
-          throw new Error(json.error || '加载失败');
-        }
-        
-        const dailyData = json.dailyData || [];
-        
-        if (dailyData.length === 0) {
-          container.innerHTML = '<div style="padding:20px; text-align:center; color:#6b7280;">暂无数据</div>';
-          return;
-        }
-        
-        // 计算总计
-        let totalCount = 0;
-        let totalAmount = 0;
-        dailyData.forEach(day => {
-          totalCount += day.count;
-          totalAmount += day.totalAmount;
-        });
-        
-        // 生成日汇总 HTML
-        const rows = dailyData.map(day => {
-          const dateObj = new Date(day.date);
-          const dayName = ['\u5468\u65e5', '\u5468\u4e00', '\u5468\u4e8c', '\u5468\u4e09', '\u5468\u56db', '\u5468\u4e94', '\u5468\u516d'][dateObj.getDay()];
-          
-          return `
-            <div style="background:#111827; border:1px solid #374151; border-radius:8px; padding:12px; margin-bottom:8px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <div style="font-size:14px; font-weight:600; color:#93c5fd;">
-                  ${day.date} (${dayName})
-                </div>
-                <div style="font-size:12px; color:#9ca3af;">
-                  ${day.count} 笔
-                </div>
-              </div>
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="font-size:12px; color:#9ca3af;">总额</div>
-                <div style="font-size:18px; font-weight:700; color:#fbbf24;">
-                  ${day.totalAmount.toLocaleString()} DP
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
-        
-        container.innerHTML = `
-          <div style="margin-bottom:12px; padding:10px; background:#0f172a; border-radius:8px;">
-            <div style="font-size:13px; color:#9ca3af; margin-bottom:4px;">最近 7 天总计</div>
-            <div style="display:flex; gap:16px;">
-              <div>
-                <div style="font-size:11px; color:#9ca3af;">总笔数</div>
-                <div style="font-size:20px; font-weight:700; color:#93c5fd;">${totalCount}</div>
-              </div>
-              <div>
-                <div style="font-size:11px; color:#9ca3af;">总金额</div>
-                <div style="font-size:20px; font-weight:700; color:#fbbf24;">${totalAmount.toLocaleString()} DP</div>
-              </div>
-            </div>
-          </div>
-          ${rows}
-        `;
-        
-        $('nftClaimsStats').textContent = `7天总计：${totalCount} 笔 | 总额：${totalAmount.toLocaleString()} DP`;
-      } catch (error) {
-        console.error('加载 NFT 日汇总失败:', error);
-        $('nftClaimsDailyContent').innerHTML = `<div style="padding:20px; text-align:center; color:#ef4444;">❌ 加载失败: ${error.message}</div>`;
-      }
-    }
-    
     async function loadTEngineDeposits() {
       try {
         const tbody = $('tEngineDepositsTableBody');
         tbody.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center; color:#6b7280;">🔄 加载中...</td></tr>';
         
-        const res = await fetch('/api/pool-flows?type=tengine-deposits&limit=200');
+        const res = await fetch('/api/pool-flows?type=tengine-deposits&limit=50');
         const json = await res.json();
         
         if (!json.success) {
@@ -1630,7 +1533,7 @@
         const tbody = $('tEngineClaimsTableBody');
         tbody.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center; color:#6b7280;">🔄 加载中...</td></tr>';
         
-        const res = await fetch('/api/pool-flows?type=tengine-claims&limit=200');
+        const res = await fetch('/api/pool-flows?type=tengine-claims&limit=50');
         const json = await res.json();
         
         if (!json.success) {
@@ -1670,63 +1573,10 @@
       }
     }
     
-    // 视图切换函数
-    function switchView(prefix, view) {
-      const listView = $(prefix + 'ListView');
-      const dailyView = $(prefix + 'DailyView');
-      const btnList = $('btn' + prefix.charAt(0).toUpperCase() + prefix.slice(1) + 'ViewList');
-      const btnDaily = $('btn' + prefix.charAt(0).toUpperCase() + prefix.slice(1) + 'ViewDaily');
-      
-      if (view === 'list') {
-        listView.style.display = 'block';
-        dailyView.style.display = 'none';
-        btnList.style.background = prefix === 'nftClaims' ? '#4f46e5' : (prefix === 'tEngineDeposits' ? '#a78bfa' : '#10b981');
-        btnDaily.style.background = '#374151';
-      } else {
-        listView.style.display = 'none';
-        dailyView.style.display = 'block';
-        btnList.style.background = '#374151';
-        btnDaily.style.background = prefix === 'nftClaims' ? '#4f46e5' : (prefix === 'tEngineDeposits' ? '#a78bfa' : '#10b981');
-      }
-    }
-    
-    // NFT Claims 视图切换
-    $('btnNFTViewList').onclick = () => switchView('nftClaims', 'list');
-    $('btnNFTViewDaily').onclick = () => {
-      switchView('nftClaims', 'daily');
-      loadNFTClaimsDaily();
-    };
-    
-    // T-Engine Deposits 视图切换
-    $('btnTEngineDepositViewList').onclick = () => switchView('tEngineDeposits', 'list');
-    $('btnTEngineDepositViewDaily').onclick = () => {
-      switchView('tEngineDeposits', 'daily');
-      loadTEngineDepositsDaily();
-    };
-    
-    // T-Engine Claims 视图切换
-    $('btnTEngineClaimViewList').onclick = () => switchView('tEngineClaims', 'list');
-    $('btnTEngineClaimViewDaily').onclick = () => {
-      switchView('tEngineClaims', 'daily');
-      loadTEngineClaimsDaily();
-    };
-    
     // 绑定刷新按钮
-    $('btnRefreshNFTClaims').onclick = () => {
-      const dailyView = $('nftClaimsDailyView');
-      if (dailyView.style.display === 'none') loadNFTClaims();
-      else loadNFTClaimsDaily();
-    };
-    $('btnRefreshTEngineDeposits').onclick = () => {
-      const dailyView = $('tEngineDepositsDailyView');
-      if (dailyView.style.display === 'none') loadTEngineDeposits();
-      else loadTEngineDepositsDaily();
-    };
-    $('btnRefreshTEngineClaims').onclick = () => {
-      const dailyView = $('tEngineClaimsDailyView');
-      if (dailyView.style.display === 'none') loadTEngineClaims();
-      else loadTEngineClaimsDaily();
-    };
+    $('btnRefreshNFTClaims').onclick = loadNFTClaims;
+    $('btnRefreshTEngineDeposits').onclick = loadTEngineDeposits;
+    $('btnRefreshTEngineClaims').onclick = loadTEngineClaims;
     
     // Bind connect button
     $('connectBtn').onclick = connectWallet;
