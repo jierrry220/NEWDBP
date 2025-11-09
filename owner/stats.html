@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Debear Party - 数据统计</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:#0f172a; color:#e2e8f0; margin:0; padding:0; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+    .header { background:#111827; border:1px solid #1f2937; border-radius:12px; padding:20px; margin-bottom:16px; }
+    .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .btn { background:#4f46e5; color:#fff; border:0; padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:600; transition:all 0.2s; }
+    .btn:hover { opacity:0.9; }
+    .btn.secondary { background:#10b981; }
+    .card { background:#0b1220; border:1px solid #1f2937; border-radius:12px; padding:20px; margin-bottom:16px; }
+    .card h2 { margin:0 0 16px; font-size:20px; }
+    .muted { color:#9ca3af; font-size:13px; }
+    a { color:#93c5fd; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="row">
+        <h1 style="margin:0; font-size:24px; color:#bfdbfe;">📊 Debear Party - 数据统计</h1>
+        <div style="flex:1"></div>
+        <a href="admin.html" style="text-decoration:none;">
+          <button class="btn">🛠️ 返回控制台</button>
+        </a>
+      </div>
+      <div class="muted" style="margin-top:8px;">实时区块链数据查询 | Berachain 主网</div>
+    </div>
+
+    <!-- NFT 矿池流出记录 -->
+    <div class="card" style="border:2px solid #3b82f6;">
+      <h2 style="color:#93c5fd;">📊 NFT 矿池流出记录（用户 Claim）</h2>
+      <div class="row" style="margin-bottom:12px; gap:8px;">
+        <button class="btn secondary" onclick="loadNFTClaims()">🔄 刷新</button>
+        <span class="muted" style="flex:1;">NFT 矿池：<span style="font-family:monospace; font-size:11px;">0x0D9b...2097</span></span>
+      </div>
+      <div style="max-height:700px; overflow-y:auto; border:1px solid #374151; border-radius:8px; padding:12px; background:#0d1117;" id="nftClaimsContainer">
+        <div style="padding:20px; text-align:center; color:#6b7280;">加载中...</div>
+      </div>
+      <div class="muted" style="margin-top:8px; font-size:14px;" id="nftClaimsStats">总计：--</div>
+    </div>
+
+    <!-- T-Engine 投入 & 领取记录 -->
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(600px, 1fr)); gap:16px;">
+      <!-- T-Engine 投入记录 -->
+      <div class="card" style="border:2px solid #a78bfa;">
+        <h2 style="color:#c4b5fd;">⛏️ T-Engine 投入记录（Deposit）</h2>
+        <div class="row" style="margin-bottom:12px; gap:8px;">
+          <button class="btn" style="background:#a78bfa;" onclick="loadTEngineDeposits()">🔄 刷新</button>
+          <span class="muted" style="flex:1;">T-Engine：<span style="font-family:monospace; font-size:11px;">0xd966...81D8</span></span>
+        </div>
+        <div style="max-height:700px; overflow-y:auto; border:1px solid #374151; border-radius:8px; padding:12px; background:#0d1117;" id="tEngineDepositsContainer">
+          <div style="padding:20px; text-align:center; color:#6b7280;">加载中...</div>
+        </div>
+        <div class="muted" style="margin-top:8px; font-size:14px;" id="tEngineDepositsStats">总计：--</div>
+      </div>
+
+      <!-- T-Engine 领取记录 -->
+      <div class="card" style="border:2px solid #10b981;">
+        <h2 style="color:#6ee7b7;">⛏️ T-Engine 领取记录（Claim）</h2>
+        <div class="row" style="margin-bottom:12px; gap:8px;">
+          <button class="btn secondary" onclick="loadTEngineClaims()">🔄 刷新</button>
+          <span class="muted" style="flex:1;">T-Engine：<span style="font-family:monospace; font-size:11px;">0xd966...81D8</span></span>
+        </div>
+        <div style="max-height:700px; overflow-y:auto; border:1px solid #374151; border-radius:8px; padding:12px; background:#0d1117;" id="tEngineClaimsContainer">
+          <div style="padding:20px; text-align:center; color:#6b7280;">加载中...</div>
+        </div>
+        <div class="muted" style="margin-top:8px; font-size:14px;" id="tEngineClaimsStats">总计：--</div>
+      </div>
+    </div>
+
+    <div class="muted" style="text-align:center; padding:20px 0;">
+      <p>💡 数据每3秒自动批量加载，默认加载最近3天历史记录</p>
+      <p>🔗 点击交易链接可在 <a href="https://berascan.com" target="_blank">Berascan</a> 查看详情</p>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    // NFT Claims
+    let nftClaimsAllData = [];
+    let nftClaimsBatchCount = 0;
+    let nftClaimsLoadingState = { active: false, targetDays: 3, startBatch: 0, startDayCount: 0 };
+
+    function getNFTClaimsDayCount() {
+      if (nftClaimsAllData.length === 0) return 0;
+      const dates = new Set(nftClaimsAllData.map(r => new Date(r.timestamp * 1000).toISOString().split('T')[0]));
+      return dates.size;
+    }
+
+    async function loadNFTClaimsBatch() {
+      try {
+        const fromBlockOffset = nftClaimsBatchCount * 9900; // 修正: 第0批从0开始
+        console.log(`🔄 NFT Claims 批次 ${nftClaimsBatchCount + 1}, offset=${fromBlockOffset}`);
+
+        const res = await fetch(`/api/pool-flows?type=nft-claims&limit=10000&fromBlockOffset=${fromBlockOffset}`);
+        const json = await res.json();
+
+        nftClaimsBatchCount++;
+
+        if (!json.success || !json.data || json.data.length === 0) {
+          console.log(`⚠️ NFT Claims 批次 ${nftClaimsBatchCount}: 没有数据`);
+        } else {
+          const existingHashes = new Set(nftClaimsAllData.map(r => r.txHash));
+          const newRecords = json.data.filter(r => !existingHashes.has(r.txHash));
+          nftClaimsAllData.push(...newRecords);
+          console.log(`✅ NFT Claims 批次 ${nftClaimsBatchCount}: 加载 ${newRecords.length} 条，总计 ${nftClaimsAllData.length} 条`);
+        }
+
+        renderNFTClaims();
+
+        const currentDays = getNFTClaimsDayCount();
+        const newDays = currentDays - nftClaimsLoadingState.startDayCount;
+        const batchesLoaded = nftClaimsBatchCount - nftClaimsLoadingState.startBatch;
+        const targetDays = nftClaimsLoadingState.targetDays;
+
+        console.log(`📊 NFT Claims: 总共 ${currentDays} 天，本次新增 ${newDays} 天，目标 ${targetDays} 天`);
+
+        if (newDays >= targetDays) {
+          console.log(`✅ NFT Claims: 本次已加载 ${newDays} 天，达到目标，停止`);
+          nftClaimsLoadingState.active = false;
+          renderNFTClaims();
+          return false;
+        }
+
+        if (nftClaimsLoadingState.active) {
+          const delay = batchesLoaded < 5 ? 1000 : 3000;
+          setTimeout(loadNFTClaimsBatch, delay);
+        }
+
+        return true;
+      } catch (error) {
+        console.error(`❌ NFT Claims 批次失败:`, error);
+        nftClaimsBatchCount++;
+        if (nftClaimsLoadingState.active) {
+          const batchesLoaded = nftClaimsBatchCount - nftClaimsLoadingState.startBatch;
+          const delay = batchesLoaded < 5 ? 1000 : 3000;
+          setTimeout(loadNFTClaimsBatch, delay);
+        }
+        return false;
+      }
+    }
+
+    function renderNFTClaims() {
+      const container = $('nftClaimsContainer');
+
+      if (nftClaimsAllData.length === 0) {
+        container.innerHTML = '<div style="padding:20px; text-align:center; color:#6b7280;">暂无记录</div>';
+        $('nftClaimsStats').textContent = '总计：0 笔';
+        return;
+      }
+
+      const groupedByDate = {};
+      nftClaimsAllData.forEach(record => {
+        const dateKey = new Date(record.timestamp * 1000).toISOString().split('T')[0];
+        if (!groupedByDate[dateKey]) groupedByDate[dateKey] = [];
+        groupedByDate[dateKey].push(record);
+      });
+
+      const sortedDates = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a));
+      let totalCount = 0, totalAmount = 0;
+
+      const html = sortedDates.map(dateKey => {
+        const records = groupedByDate[dateKey];
+        const dayName = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][new Date(dateKey).getDay()];
+        let dayTotal = 0;
+
+        const rows = records.map(record => {
+          const amount = parseFloat(record.amount);
+          dayTotal += amount;
+          totalCount++;
+          totalAmount += amount;
+          const timeStr = new Date(record.timestamp * 1000).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          const explorerUrl = `https://berascan.com/tx/${record.txHash}`;
+          return `<div style="display:flex; align-items:center; padding:8px; border-bottom:1px solid #1f2937; font-size:12px;">
+            <div style="flex:0 0 80px; color:#9ca3af;">${timeStr}</div>
+            <div style="flex:1; font-family:monospace; color:#93c5fd;">${record.to.slice(0,6)}...${record.to.slice(-4)}</div>
+            <div style="flex:0 0 120px; text-align:right; color:#fbbf24; font-weight:600;">${amount.toLocaleString()} DP</div>
+            <div style="flex:0 0 40px; text-align:center;"><a href="${explorerUrl}" target="_blank" style="color:#60a5fa; text-decoration:none;">🔗</a></div>
+          </div>`;
+        }).join('');
+
+        return `<div style="margin-bottom:16px;">
+          <div style="background:#0f172a; padding:10px; border-radius:8px 8px 0 0; border-bottom:2px solid #3b82f6;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-size:14px; font-weight:600; color:#93c5fd;">📅 ${dateKey} (${dayName})</div>
+              <div style="font-size:13px; color:#9ca3af;">${records.length} 笔 | ${dayTotal.toLocaleString()} DP</div>
+            </div>
+          </div>
+          <div style="background:#111827; border-radius:0 0 8px 8px;">${rows}</div>
+        </div>`;
+      }).join('');
+
+      const currentDays = getNFTClaimsDayCount();
+      let footer = '';
+      if (nftClaimsLoadingState.active) {
+        footer = `<div style="padding:10px; text-align:center; color:#9ca3af; font-size:12px;">🔄 正在加载更多数据... (已有 ${currentDays} 天)</div>`;
+      } else {
+        footer = `<div style="padding:10px; text-align:center;">
+          <div style="color:#9ca3af; font-size:12px; margin-bottom:8px;">已加载 ${currentDays} 天历史数据</div>
+          <button onclick="loadMoreNFTClaims()" style="padding:6px 16px; background:#3b82f6; color:white; border:none; border-radius:6px; cursor:pointer; font-size:12px;">📥 加载更多 (3天)</button>
+        </div>`;
+      }
+
+      container.innerHTML = html + footer;
+      $('nftClaimsStats').textContent = `总计：${totalCount} 笔 | 总额：${totalAmount.toLocaleString()} DP`;
+    }
+
+    async function loadNFTClaims() {
+      nftClaimsAllData = [];
+      nftClaimsBatchCount = 0;
+      nftClaimsLoadingState = { active: true, targetDays: 3, startBatch: 0, startDayCount: 0 };
+      $('nftClaimsContainer').innerHTML = '<div style="padding:20px; text-align:center; color:#6b7280;">🔄 加载中...</div>';
+      await loadNFTClaimsBatch();
+    }
+
+    async function loadMoreNFTClaims() {
+      const currentDays = getNFTClaimsDayCount();
+      nftClaimsLoadingState = { active: true, targetDays: 3, startBatch: nftClaimsBatchCount, startDayCount: currentDays };
+      renderNFTClaims();
+      await loadNFTClaimsBatch();
+    }
+
+    // T-Engine Deposits (类似结构)
+    let tEngineDepositsAllData = [];
+    let tEngineDepositsBatchCount = 0;
+    let tEngineDepositsLoadingState = { active: false, targetDays: 3, startBatch: 0, startDayCount: 0 };
+
+    function getTEngineDepositsDayCount() {
+      if (tEngineDepositsAllData.length === 0) return 0;
+      const dates = new Set(tEngineDepositsAllData.map(r => new Date(r.timestamp * 1000).toISOString().split('T')[0]));
+      return dates.size;
+    }
+
+    async function loadTEngineDepositsBatch() {
+      try {
+        const fromBlockOffset = tEngineDepositsBatchCount * 9900; // 修正: 第0批从0开始
+        const res = await fetch(`/api/pool-flows?type=tengine-deposits&limit=10000&fromBlockOffset=${fromBlockOffset}`);
+        const json = await res.json();
+        tEngineDepositsBatchCount++;
+
+        if (!json.success || !json.data || json.data.length === 0) {
+          console.log(`⚠️ T-Engine Deposits 批次 ${tEngineDepositsBatchCount}: 没有数据`);
+        } else {
+          const existingHashes = new Set(tEngineDepositsAllData.map(r => r.txHash));
+          const newRecords = json.data.filter(r => !existingHashes.has(r.txHash));
+          tEngineDepositsAllData.push(...newRecords);
+        }
+
+        renderTEngineDeposits();
+
+        const currentDays = getTEngineDepositsDayCount();
+        const newDays = currentDays - tEngineDepositsLoadingState.startDayCount;
+        const targetDays = tEngineDepositsLoadingState.targetDays;
+
+        if (newDays >= targetDays) {
+          tEngineDepositsLoadingState.active = false;
+          renderTEngineDeposits();
+          return false;
+        }
+
+        if (tEngineDepositsLoadingState.active) {
+          const batchesLoaded = tEngineDepositsBatchCount - tEngineDepositsLoadingState.startBatch;
+          const delay = batchesLoaded < 5 ? 1000 : 3000;
+          setTimeout(loadTEngineDepositsBatch, delay);
+        }
+        return true;
+      } catch (error) {
+        console.error(`❌ T-Engine Deposits 失败:`, error);
+        return false;
+      }
+    }
+
+    function renderTEngineDeposits() {
+      const container = $('tEngineDepositsContainer');
+      if (tEngineDepositsAllData.length === 0) {
+        container.innerHTML = '<div style="padding:20px; text-align:center; color:#6b7280;">暂无记录</div>';
+        $('tEngineDepositsStats').textContent = '总计：0 笔';
+        return;
+      }
+
+      const groupedByDate = {};
+      tEngineDepositsAllData.forEach(record => {
+        const dateKey = new Date(record.timestamp * 1000).toISOString().split('T')[0];
+        if (!groupedByDate[dateKey]) groupedByDate[dateKey] = [];
+        groupedByDate[dateKey].push(record);
+      });
+
+      const sortedDates = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a));
+      let totalCount = 0, totalAmount = 0;
+
+      const html = sortedDates.map(dateKey => {
+        const records = groupedByDate[dateKey];
+        const dayName = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][new Date(dateKey).getDay()];
+        let dayTotal = 0;
+
+        const rows = records.map(record => {
+          const amount = parseFloat(record.amount);
+          dayTotal += amount;
+          totalCount++;
+          totalAmount += amount;
+          const timeStr = new Date(record.timestamp * 1000).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          const explorerUrl = `https://berascan.com/tx/${record.txHash}`;
+          return `<div style="display:flex; align-items:center; padding:8px; border-bottom:1px solid #1f2937; font-size:12px;">
+            <div style="flex:0 0 80px; color:#9ca3af;">${timeStr}</div>
+            <div style="flex:1; font-family:monospace; color:#c4b5fd;">${record.from.slice(0,6)}...${record.from.slice(-4)}</div>
+            <div style="flex:0 0 120px; text-align:right; color:#a78bfa; font-weight:600;">${amount.toLocaleString()} DP</div>
+            <div style="flex:0 0 40px; text-align:center;"><a href="${explorerUrl}" target="_blank" style="color:#60a5fa; text-decoration:none;">🔗</a></div>
+          </div>`;
+        }).join('');
+
+        return `<div style="margin-bottom:16px;">
+          <div style="background:#0f172a; padding:10px; border-radius:8px 8px 0 0; border-bottom:2px solid #a78bfa;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-size:14px; font-weight:600; color:#c4b5fd;">📅 ${dateKey} (${dayName})</div>
+              <div style="font-size:13px; color:#9ca3af;">${records.length} 笔 | ${dayTotal.toLocaleString()} DP</div>
+            </div>
+          </div>
+          <div style="background:#111827; border-radius:0 0 8px 8px;">${rows}</div>
+        </div>`;
+      }).join('');
+
+      const currentDays = getTEngineDepositsDayCount();
+      let footer = '';
+      if (tEngineDepositsLoadingState.active) {
+        footer = `<div style="padding:10px; text-align:center; color:#9ca3af; font-size:12px;">🔄 正在加载更多数据... (已有 ${currentDays} 天)</div>`;
+      } else {
+        footer = `<div style="padding:10px; text-align:center;">
+          <div style="color:#9ca3af; font-size:12px; margin-bottom:8px;">已加载 ${currentDays} 天历史数据</div>
+          <button onclick="loadMoreTEngineDeposits()" style="padding:6px 16px; background:#a78bfa; color:white; border:none; border-radius:6px; cursor:pointer; font-size:12px;">📥 加载更多 (3天)</button>
+        </div>`;
+      }
+
+      container.innerHTML = html + footer;
+      $('tEngineDepositsStats').textContent = `总计：${totalCount} 笔 | 总额：${totalAmount.toLocaleString()} DP`;
+    }
+
+    async function loadTEngineDeposits() {
+      tEngineDepositsAllData = [];
+      tEngineDepositsBatchCount = 0;
+      tEngineDepositsLoadingState = { active: true, targetDays: 3, startBatch: 0, startDayCount: 0 };
+      $('tEngineDepositsContainer').innerHTML = '<div style="padding:20px; text-align:center; color:#6b7280;">🔄 加载中...</div>';
+      await loadTEngineDepositsBatch();
+    }
+
+    async function loadMoreTEngineDeposits() {
+      const currentDays = getTEngineDepositsDayCount();
+      tEngineDepositsLoadingState = { active: true, targetDays: 3, startBatch: tEngineDepositsBatchCount, startDayCount: currentDays };
+      renderTEngineDeposits();
+      await loadTEngineDepositsBatch();
+    }
+
+    // T-Engine Claims (类似结构)
+    let tEngineClaimsAllData = [];
+    let tEngineClaimsBatchCount = 0;
+    let tEngineClaimsLoadingState = { active: false, targetDays: 3, startBatch: 0, startDayCount: 0 };
+
+    function getTEngineClaimsDayCount() {
+      if (tEngineClaimsAllData.length === 0) return 0;
+      const dates = new Set(tEngineClaimsAllData.map(r => new Date(r.timestamp * 1000).toISOString().split('T')[0]));
+      return dates.size;
+    }
+
+    async function loadTEngineClaimsBatch() {
+      try {
+        const fromBlockOffset = tEngineClaimsBatchCount * 9900; // 修正: 第0批从0开始
+        const res = await fetch(`/api/pool-flows?type=tengine-claims&limit=10000&fromBlockOffset=${fromBlockOffset}`);
+        const json = await res.json();
+        tEngineClaimsBatchCount++;
+
+        if (!json.success || !json.data || json.data.length === 0) {
+          console.log(`⚠️ T-Engine Claims 批次 ${tEngineClaimsBatchCount}: 没有数据`);
+        } else {
+          const existingHashes = new Set(tEngineClaimsAllData.map(r => r.txHash));
+          const newRecords = json.data.filter(r => !existingHashes.has(r.txHash));
+          tEngineClaimsAllData.push(...newRecords);
+        }
+
+        renderTEngineClaims();
+
+        const currentDays = getTEngineClaimsDayCount();
+        const newDays = currentDays - tEngineClaimsLoadingState.startDayCount;
+        const targetDays = tEngineClaimsLoadingState.targetDays;
+
+        if (newDays >= targetDays) {
+          tEngineClaimsLoadingState.active = false;
+          renderTEngineClaims();
+          return false;
+        }
+
+        if (tEngineClaimsLoadingState.active) {
+          const batchesLoaded = tEngineClaimsBatchCount - tEngineClaimsLoadingState.startBatch;
+          const delay = batchesLoaded < 5 ? 1000 : 3000;
+          setTimeout(loadTEngineClaimsBatch, delay);
+        }
+        return true;
+      } catch (error) {
+        console.error(`❌ T-Engine Claims 失败:`, error);
+        return false;
+      }
+    }
+
+    function renderTEngineClaims() {
+      const container = $('tEngineClaimsContainer');
+      if (tEngineClaimsAllData.length === 0) {
+        container.innerHTML = '<div style="padding:20px; text-align:center; color:#6b7280;">暂无记录</div>';
+        $('tEngineClaimsStats').textContent = '总计：0 笔';
+        return;
+      }
+
+      const groupedByDate = {};
+      tEngineClaimsAllData.forEach(record => {
+        const dateKey = new Date(record.timestamp * 1000).toISOString().split('T')[0];
+        if (!groupedByDate[dateKey]) groupedByDate[dateKey] = [];
+        groupedByDate[dateKey].push(record);
+      });
+
+      const sortedDates = Object.keys(groupedByDate).sort((a, b) => b.localeCompare(a));
+      let totalCount = 0, totalAmount = 0;
+
+      const html = sortedDates.map(dateKey => {
+        const records = groupedByDate[dateKey];
+        const dayName = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][new Date(dateKey).getDay()];
+        let dayTotal = 0;
+
+        const rows = records.map(record => {
+          const amount = parseFloat(record.amount);
+          dayTotal += amount;
+          totalCount++;
+          totalAmount += amount;
+          const timeStr = new Date(record.timestamp * 1000).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          const explorerUrl = `https://berascan.com/tx/${record.txHash}`;
+          return `<div style="display:flex; align-items:center; padding:8px; border-bottom:1px solid #1f2937; font-size:12px;">
+            <div style="flex:0 0 80px; color:#9ca3af;">${timeStr}</div>
+            <div style="flex:1; font-family:monospace; color:#6ee7b7;">${record.to.slice(0,6)}...${record.to.slice(-4)}</div>
+            <div style="flex:0 0 120px; text-align:right; color:#10b981; font-weight:600;">${amount.toLocaleString()} DP</div>
+            <div style="flex:0 0 40px; text-align:center;"><a href="${explorerUrl}" target="_blank" style="color:#60a5fa; text-decoration:none;">🔗</a></div>
+          </div>`;
+        }).join('');
+
+        return `<div style="margin-bottom:16px;">
+          <div style="background:#0f172a; padding:10px; border-radius:8px 8px 0 0; border-bottom:2px solid #10b981;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-size:14px; font-weight:600; color:#6ee7b7;">📅 ${dateKey} (${dayName})</div>
+              <div style="font-size:13px; color:#9ca3af;">${records.length} 笔 | ${dayTotal.toLocaleString()} DP</div>
+            </div>
+          </div>
+          <div style="background:#111827; border-radius:0 0 8px 8px;">${rows}</div>
+        </div>`;
+      }).join('');
+
+      const currentDays = getTEngineClaimsDayCount();
+      let footer = '';
+      if (tEngineClaimsLoadingState.active) {
+        footer = `<div style="padding:10px; text-align:center; color:#9ca3af; font-size:12px;">🔄 正在加载更多数据... (已有 ${currentDays} 天)</div>`;
+      } else {
+        footer = `<div style="padding:10px; text-align:center;">
+          <div style="color:#9ca3af; font-size:12px; margin-bottom:8px;">已加载 ${currentDays} 天历史数据</div>
+          <button onclick="loadMoreTEngineClaims()" style="padding:6px 16px; background:#10b981; color:white; border:none; border-radius:6px; cursor:pointer; font-size:12px;">📥 加载更多 (3天)</button>
+        </div>`;
+      }
+
+      container.innerHTML = html + footer;
+      $('tEngineClaimsStats').textContent = `总计：${totalCount} 笔 | 总额：${totalAmount.toLocaleString()} DP`;
+    }
+
+    async function loadTEngineClaims() {
+      tEngineClaimsAllData = [];
+      tEngineClaimsBatchCount = 0;
+      tEngineClaimsLoadingState = { active: true, targetDays: 3, startBatch: 0, startDayCount: 0 };
+      $('tEngineClaimsContainer').innerHTML = '<div style="padding:20px; text-align:center; color:#6b7280;">🔄 加载中...</div>';
+      await loadTEngineClaimsBatch();
+    }
+
+    async function loadMoreTEngineClaims() {
+      const currentDays = getTEngineClaimsDayCount();
+      tEngineClaimsLoadingState = { active: true, targetDays: 3, startBatch: tEngineClaimsBatchCount, startDayCount: currentDays };
+      renderTEngineClaims();
+      await loadTEngineClaimsBatch();
+    }
+
+    // 页面初始化 - 自动加载所有数据
+    console.log('📊 Debear Party - 数据统计页面');
+    Promise.all([
+      loadNFTClaims(),
+      loadTEngineDeposits(),
+      loadTEngineClaims()
+    ]).then(() => {
+      console.log('✅ 所有数据加载完成');
+    }).catch(err => {
+      console.warn('⚠️ 部分数据加载失败:', err);
+    });
+  </script>
+</body>
+</html>

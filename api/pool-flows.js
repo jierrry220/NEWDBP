@@ -49,9 +49,9 @@ function formatDP(value) {
  * 获取 NFT 矿池的 DP claim 记录
  * 通过查询 Transfer(from=nftMiningPool, to=user) 事件
  */
-async function getNFTPoolClaims(fromBlock = null, toBlock = 'latest', limit = 100) {
+async function getNFTPoolClaims(fromBlock = null, toBlock = 'latest', limit = 100, useCache = true) {
   const now = Date.now();
-  if (cache.nftClaims.data && (now - cache.nftClaims.timestamp) < CACHE_TTL) {
+  if (useCache && cache.nftClaims.data && (now - cache.nftClaims.timestamp) < CACHE_TTL) {
     console.log('📦 使用缓存的 NFT claims');
     return cache.nftClaims.data;
   }
@@ -133,9 +133,9 @@ async function getNFTPoolClaims(fromBlock = null, toBlock = 'latest', limit = 10
  * T-Engine deposit 是通过 burn DP Token 实现的，所以查询 Transfer(from=user, to=0x0) 事件
  * 同时查询 T-Engine 合约的 Deposited 事件来确认是 deposit 而不是其他 burn
  */
-async function getTEngineDeposits(fromBlock = null, toBlock = 'latest', limit = 100) {
+async function getTEngineDeposits(fromBlock = null, toBlock = 'latest', limit = 100, useCache = true) {
   const now = Date.now();
-  if (cache.tEngineDeposits.data && (now - cache.tEngineDeposits.timestamp) < CACHE_TTL) {
+  if (useCache && cache.tEngineDeposits.data && (now - cache.tEngineDeposits.timestamp) < CACHE_TTL) {
     console.log('📦 使用缓存的 T-Engine deposits');
     return cache.tEngineDeposits.data;
   }
@@ -216,9 +216,9 @@ async function getTEngineDeposits(fromBlock = null, toBlock = 'latest', limit = 
  * 获取 T-Engine 的 claim 记录
  * 通过查询 Transfer(from=tEngine, to=user) 事件
  */
-async function getTEngineClaims(fromBlock = null, toBlock = 'latest', limit = 100) {
+async function getTEngineClaims(fromBlock = null, toBlock = 'latest', limit = 100, useCache = true) {
   const now = Date.now();
-  if (cache.tEngineClaims.data && (now - cache.tEngineClaims.timestamp) < CACHE_TTL) {
+  if (useCache && cache.tEngineClaims.data && (now - cache.tEngineClaims.timestamp) < CACHE_TTL) {
     console.log('📦 使用缓存的 T-Engine claims');
     return cache.tEngineClaims.data;
   }
@@ -308,17 +308,29 @@ module.exports = async (req, res) => {
   const toBlock = url.searchParams.get('toBlock') || 'latest';
   const limit = parseInt(url.searchParams.get('limit') || '100', 10);
   
-  // 处理 fromBlock: 如果有 fromBlockOffset, 则计算 fromBlock
+  // 处理 fromBlock 和 toBlock: 如果有 fromBlockOffset, 则计算范围
   let fromBlock = null;
+  let calculatedToBlock = toBlock;
+  
   if (fromBlockParam) {
     fromBlock = parseInt(fromBlockParam, 10);
-  } else if (fromBlockOffsetParam) {
-    // 获取当前区块，然后减去 offset
+  } else if (fromBlockOffsetParam !== null && fromBlockOffsetParam !== undefined) {
+    // 分批查询: 计算一个固定范围的区块
     const provider = getProvider();
     const latestBlock = await provider.getBlockNumber();
     const offset = parseInt(fromBlockOffsetParam, 10);
-    fromBlock = Math.max(0, latestBlock - offset);
-    console.log(`📊 分批查询: latestBlock=${latestBlock}, offset=${offset}, fromBlock=${fromBlock}`);
+    
+    // 计算范围: 当offset=0时，查询[latestBlock-9900, latestBlock]
+    if (offset === 0) {
+      fromBlock = Math.max(0, latestBlock - 9900);
+      calculatedToBlock = latestBlock;
+    } else {
+      // offset>0时，查询更早的区块
+      fromBlock = Math.max(0, latestBlock - offset - 9900);
+      calculatedToBlock = Math.max(fromBlock, latestBlock - offset);
+    }
+    
+    console.log(`📊 分批查询: latestBlock=${latestBlock}, offset=${offset}, fromBlock=${fromBlock}, toBlock=${calculatedToBlock}, range=${calculatedToBlock - fromBlock}`);
   }
 
   res.setHeader('Content-Type', 'application/json');
@@ -327,15 +339,18 @@ module.exports = async (req, res) => {
   try {
     let data;
     
+    // 分批查询时禁用缓存
+    const useCache = !fromBlockOffsetParam;
+    
     switch (type) {
       case 'nft-claims':
-        data = await getNFTPoolClaims(fromBlock, toBlock, limit);
+        data = await getNFTPoolClaims(fromBlock, calculatedToBlock, limit, useCache);
         break;
       case 'tengine-deposits':
-        data = await getTEngineDeposits(fromBlock, toBlock, limit);
+        data = await getTEngineDeposits(fromBlock, calculatedToBlock, limit, useCache);
         break;
       case 'tengine-claims':
-        data = await getTEngineClaims(fromBlock, toBlock, limit);
+        data = await getTEngineClaims(fromBlock, calculatedToBlock, limit, useCache);
         break;
       default:
         res.status(400);
