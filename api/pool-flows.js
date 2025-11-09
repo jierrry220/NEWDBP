@@ -298,15 +298,64 @@ async function getTEngineClaims(fromBlock = null, toBlock = 'latest', limit = 10
 }
 
 /**
+ * 按日汇总数据
+ * @param {Array} records - 原始记录数组
+ * @param {Number} days - 统计天数（默认7天）
+ * @returns {Array} 每日汇总数据
+ */
+function aggregateByDay(records, days = 7) {
+  // 获取当前 UTC 日期的开始时间戳
+  const now = Math.floor(Date.now() / 1000);
+  const todayStart = now - (now % 86400); // UTC 当天 00:00
+  
+  // 初始化最近 N 天的数据结构
+  const dailyData = [];
+  for (let i = 0; i < days; i++) {
+    const dayStart = todayStart - (i * 86400);
+    dailyData.push({
+      date: new Date(dayStart * 1000).toISOString().split('T')[0], // YYYY-MM-DD
+      timestamp: dayStart,
+      count: 0,
+      totalAmount: 0,
+      records: []
+    });
+  }
+  
+  // 将记录分配到对应的日期
+  records.forEach(record => {
+    const recordDayStart = record.timestamp - (record.timestamp % 86400);
+    const dayIndex = dailyData.findIndex(d => d.timestamp === recordDayStart);
+    
+    if (dayIndex !== -1) {
+      dailyData[dayIndex].count++;
+      dailyData[dayIndex].totalAmount += parseFloat(record.amount);
+      dailyData[dayIndex].records.push(record);
+    }
+  });
+  
+  // 倒序排列（最新的日期在前）
+  dailyData.reverse();
+  
+  // 格式化金额
+  dailyData.forEach(day => {
+    day.totalAmount = parseFloat(day.totalAmount.toFixed(2));
+  });
+  
+  return dailyData;
+}
+
+/**
  * API Handler
  */
 module.exports = async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   const type = url.searchParams.get('type'); // nft-claims | tengine-deposits | tengine-claims
+  const view = url.searchParams.get('view') || 'list'; // list | daily | weekly
   const fromBlockParam = url.searchParams.get('fromBlock');
   const fromBlock = fromBlockParam ? parseInt(fromBlockParam, 10) : null; // null = 自动计算
   const toBlock = url.searchParams.get('toBlock') || 'latest';
   const limit = parseInt(url.searchParams.get('limit') || '100', 10);
+  const days = parseInt(url.searchParams.get('days') || '7', 10); // 统计天数
 
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Cache-Control', 'public, max-age=30');
@@ -329,13 +378,30 @@ module.exports = async (req, res) => {
         return res.json({ error: 'Invalid type parameter. Use: nft-claims | tengine-deposits | tengine-claims' });
     }
 
+    // 根据视图类型返回不同格式的数据
+    let responseData;
+    if (view === 'daily' || view === 'weekly') {
+      const dailyData = aggregateByDay(data, days);
+      responseData = {
+        success: true,
+        type,
+        view,
+        days,
+        totalRecords: data.length,
+        dailyData
+      };
+    } else {
+      responseData = {
+        success: true,
+        type,
+        view: 'list',
+        count: data.length,
+        data
+      };
+    }
+
     res.status(200);
-    res.json({
-      success: true,
-      type,
-      count: data.length,
-      data
-    });
+    res.json(responseData);
   } catch (error) {
     console.error('❌ API 错误:', error);
     res.status(500);
