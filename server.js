@@ -75,6 +75,41 @@ const server = http.createServer(async (req, res) => {
         }
     }
     
+    // 矿池流水 API
+    if (url.startsWith('/api/pool-flows')) {
+        try {
+            const poolFlowsHandler = require('./api/pool-flows.js');
+            
+            const mockRes = {
+                statusCode: 200,
+                headers: {},
+                setHeader(key, value) {
+                    this.headers[key] = value;
+                },
+                status(code) {
+                    this.statusCode = code;
+                    return this;
+                },
+                json(data) {
+                    res.writeHead(this.statusCode, { ...this.headers, 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify(data));
+                },
+                end() {
+                    res.writeHead(this.statusCode, this.headers);
+                    res.end();
+                }
+            };
+            
+            await poolFlowsHandler(req, mockRes);
+            return;
+        } catch (error) {
+            console.error('Pool flows API error:', error);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Internal server error', message: error.message }));
+            return;
+        }
+    }
+    
     // 默认访问 index.html
     let filePath = url === '/' ? '/index.html' : url;
     filePath = path.join(__dirname, filePath);

@@ -17,5 +17,8 @@
     "web3"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "ethers": "^5.7.2"
+  }
 }

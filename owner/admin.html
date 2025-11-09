@@ -306,7 +306,84 @@
       </div>
     </div>
 
-    <div class="card" style="margin-bottom:24px;">
+    <!-- 矿池流水记录 -->
+    <div class="card" style="background:#1e293b; border:2px solid #3b82f6;">
+      <h2 style="color:#93c5fd;">📊 NFT 矿池流出记录（用户 Claim）</h2>
+      <div class="row" style="margin-bottom:12px; gap:8px;">
+        <button class="btn secondary" id="btnRefreshNFTClaims">🔄 刷新</button>
+        <span class="muted" style="flex:1">NFT 矿池：<span style="font-family:monospace; font-size:11px;">0x0D9b...2097</span></span>
+      </div>
+      <div style="max-height:400px; overflow-y:auto; border:1px solid #374151; border-radius:8px;">
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+          <thead style="position:sticky; top:0; background:#1e293b; z-index:1;">
+            <tr style="border-bottom:2px solid #374151;">
+              <th style="padding:8px; text-align:left; color:#9ca3af;">时间</th>
+              <th style="padding:8px; text-align:left; color:#9ca3af;">用户地址</th>
+              <th style="padding:8px; text-align:right; color:#9ca3af;">DP 数量</th>
+              <th style="padding:8px; text-align:center; color:#9ca3af;">交易</th>
+            </tr>
+          </thead>
+          <tbody id="nftClaimsTableBody">
+            <tr><td colspan="4" style="padding:20px; text-align:center; color:#6b7280;">加载中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="muted" style="margin-top:8px;" id="nftClaimsStats">总计：--</div>
+    </div>
+
+    <div class="grid" style="margin-top:16px;">
+      <!-- T-Engine 投入记录 -->
+      <div class="card" style="background:#1e293b; border:2px solid #a78bfa;">
+        <h2 style="color:#c4b5fd;">⛏️ T-Engine 投入记录（Deposit）</h2>
+        <div class="row" style="margin-bottom:12px; gap:8px;">
+          <button class="btn secondary" id="btnRefreshTEngineDeposits" style="background:#a78bfa;">🔄 刷新</button>
+          <span class="muted" style="flex:1">T-Engine：<span style="font-family:monospace; font-size:11px;">0xd966...81D8</span></span>
+        </div>
+        <div style="max-height:400px; overflow-y:auto; border:1px solid #374151; border-radius:8px;">
+          <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead style="position:sticky; top:0; background:#1e293b; z-index:1;">
+              <tr style="border-bottom:2px solid #374151;">
+                <th style="padding:8px; text-align:left; color:#9ca3af;">时间</th>
+                <th style="padding:8px; text-align:left; color:#9ca3af;">用户地址</th>
+                <th style="padding:8px; text-align:right; color:#9ca3af;">DP 数量</th>
+                <th style="padding:8px; text-align:center; color:#9ca3af;">交易</th>
+              </tr>
+            </thead>
+            <tbody id="tEngineDepositsTableBody">
+              <tr><td colspan="4" style="padding:20px; text-align:center; color:#6b7280;">加载中...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="muted" style="margin-top:8px;" id="tEngineDepositsStats">总计：--</div>
+      </div>
+
+      <!-- T-Engine Claim 记录 -->
+      <div class="card" style="background:#1e293b; border:2px solid #10b981;">
+        <h2 style="color:#6ee7b7;">⛏️ T-Engine 领取记录（Claim）</h2>
+        <div class="row" style="margin-bottom:12px; gap:8px;">
+          <button class="btn secondary" id="btnRefreshTEngineClaims">🔄 刷新</button>
+          <span class="muted" style="flex:1">T-Engine：<span style="font-family:monospace; font-size:11px;">0xd966...81D8</span></span>
+        </div>
+        <div style="max-height:400px; overflow-y:auto; border:1px solid #374151; border-radius:8px;">
+          <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead style="position:sticky; top:0; background:#1e293b; z-index:1;">
+              <tr style="border-bottom:2px solid #374151;">
+                <th style="padding:8px; text-align:left; color:#9ca3af;">时间</th>
+                <th style="padding:8px; text-align:left; color:#9ca3af;">用户地址</th>
+                <th style="padding:8px; text-align:right; color:#9ca3af;">DP 数量</th>
+                <th style="padding:8px; text-align:center; color:#9ca3af;">交易</th>
+              </tr>
+            </thead>
+            <tbody id="tEngineClaimsTableBody">
+              <tr><td colspan="4" style="padding:20px; text-align:center; color:#6b7280;">加载中...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="muted" style="margin-top:8px;" id="tEngineClaimsStats">总计：--</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:24px; margin-top:16px;">
       <div class="muted">提示：仅合约 Owner 可调用以上管理操作。请确保当前钱包是各合约的 owner。</div>
       <div class="muted">默认地址已从部署记录填充，若有升级或变更，请在源码内 CONTRACTS 常量中更新。</div>
     </div>
@@ -408,8 +485,12 @@
       'function passConfigs(uint256) view returns (uint256 maxSupply, uint256 totalMinted, uint256 multiplier, uint256 inviteRate)',
       'function getRemainingSupply(uint256) view returns (uint256)',
       'function version() view returns (string)',
-      'function owner() view returns (address)'
+      'function owner() view returns (address)',
+      'function balanceOf(address owner, uint256 id) view returns (uint256)'
     ];
+    
+    // 税费接收地址（用于查询 Pass 余额）
+    const TAX_RECIPIENT = '0xd8b4286c2f299220830f7228bab15225b4ea8379';
 
     let provider, signer, user;
     let cachedBeraPrice = null;
@@ -1244,11 +1325,11 @@
           version = 'V1 (未升级)';
         }
         
-        // 读取 Pass 配置（V1 已有）
-        const [std, pre, ex] = await Promise.all([
-          debearPass.passConfigs(1),
-          debearPass.passConfigs(2),
-          debearPass.passConfigs(3)
+        // 查询税费地址的 Pass 余额
+        const [stdBalance, preBalance, exBalance] = await Promise.all([
+          debearPass.balanceOf(TAX_RECIPIENT, 1),
+          debearPass.balanceOf(TAX_RECIPIENT, 2),
+          debearPass.balanceOf(TAX_RECIPIENT, 3)
         ]);
         
         $('passVersion').textContent = version;
@@ -1265,9 +1346,10 @@
           $('btnPassUnpause').disabled = true;
         }
         
-        $('passStandard').textContent = `${std.totalMinted}/${std.maxSupply} (剩余 ${std.maxSupply - std.totalMinted})`;
-        $('passPremium').textContent = `${pre.totalMinted}/${pre.maxSupply} (剩余 ${pre.maxSupply - pre.totalMinted})`;
-        $('passExclusive').textContent = `${ex.totalMinted}/${ex.maxSupply} (剩余 ${ex.maxSupply - ex.totalMinted})`;
+        // 显示税费地址的余额
+        $('passStandard').textContent = `剩余 ${stdBalance.toString()} 张`;
+        $('passPremium').textContent = `剩余 ${preBalance.toString()} 张`;
+        $('passExclusive').textContent = `剩余 ${exBalance.toString()} 张`;
       } catch (e) {
         console.warn('DebearPass 读取失败:', e);
         setMsg('msgDebearPass', '读取失败: ' + (e?.message||e), false);
@@ -1355,6 +1437,147 @@
       } catch (e) { setMsg('msgTEnginePool', e?.message||String(e), false); }
     }
 
+    // 📊 矿池流水数据加载函数
+    async function loadNFTClaims() {
+      try {
+        const tbody = $('nftClaimsTableBody');
+        tbody.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center; color:#6b7280;">🔄 加载中...</td></tr>';
+        
+        const res = await fetch('/api/pool-flows?type=nft-claims&limit=50');
+        const json = await res.json();
+        
+        if (!json.success) {
+          throw new Error(json.error || '加载失败');
+        }
+        
+        const data = json.data || [];
+        
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center; color:#6b7280;">暂无记录</td></tr>';
+          $('nftClaimsStats').textContent = '总计：0 笔';
+          return;
+        }
+        
+        let totalAmount = 0;
+        const rows = data.map(record => {
+          totalAmount += parseFloat(record.amount);
+          const date = new Date(record.timestamp * 1000);
+          const timeStr = date.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+          const explorerUrl = `https://berascan.com/tx/${record.txHash}`;
+          
+          return `
+            <tr style="border-bottom:1px solid #1f2937;">
+              <td style="padding:8px; color:#e5e7eb;">${timeStr}</td>
+              <td style="padding:8px; font-family:monospace; font-size:11px; color:#93c5fd;">${record.to.slice(0,6)}...${record.to.slice(-4)}</td>
+              <td style="padding:8px; text-align:right; color:#fbbf24; font-weight:600;">${parseFloat(record.amount).toLocaleString()}</td>
+              <td style="padding:8px; text-align:center;"><a href="${explorerUrl}" target="_blank" style="color:#60a5fa; text-decoration:none;">🔗</a></td>
+            </tr>
+          `;
+        }).join('');
+        
+        tbody.innerHTML = rows;
+        $('nftClaimsStats').textContent = `总计：${data.length} 笔 | 总额：${totalAmount.toLocaleString()} DP`;
+      } catch (error) {
+        console.error('加载 NFT claims 失败:', error);
+        $('nftClaimsTableBody').innerHTML = `<tr><td colspan="4" style="padding:20px; text-align:center; color:#ef4444;">❌ 加载失败: ${error.message}</td></tr>`;
+      }
+    }
+    
+    async function loadTEngineDeposits() {
+      try {
+        const tbody = $('tEngineDepositsTableBody');
+        tbody.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center; color:#6b7280;">🔄 加载中...</td></tr>';
+        
+        const res = await fetch('/api/pool-flows?type=tengine-deposits&limit=50');
+        const json = await res.json();
+        
+        if (!json.success) {
+          throw new Error(json.error || '加载失败');
+        }
+        
+        const data = json.data || [];
+        
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center; color:#6b7280;">暂无记录</td></tr>';
+          $('tEngineDepositsStats').textContent = '总计：0 笔';
+          return;
+        }
+        
+        let totalAmount = 0;
+        const rows = data.map(record => {
+          totalAmount += parseFloat(record.amount);
+          const date = new Date(record.timestamp * 1000);
+          const timeStr = date.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+          const explorerUrl = `https://berascan.com/tx/${record.txHash}`;
+          
+          return `
+            <tr style="border-bottom:1px solid #1f2937;">
+              <td style="padding:8px; color:#e5e7eb;">${timeStr}</td>
+              <td style="padding:8px; font-family:monospace; font-size:11px; color:#c4b5fd;">${record.from.slice(0,6)}...${record.from.slice(-4)}</td>
+              <td style="padding:8px; text-align:right; color:#a78bfa; font-weight:600;">${parseFloat(record.amount).toLocaleString()}</td>
+              <td style="padding:8px; text-align:center;"><a href="${explorerUrl}" target="_blank" style="color:#60a5fa; text-decoration:none;">🔗</a></td>
+            </tr>
+          `;
+        }).join('');
+        
+        tbody.innerHTML = rows;
+        $('tEngineDepositsStats').textContent = `总计：${data.length} 笔 | 总额：${totalAmount.toLocaleString()} DP`;
+      } catch (error) {
+        console.error('加载 T-Engine deposits 失败:', error);
+        $('tEngineDepositsTableBody').innerHTML = `<tr><td colspan="4" style="padding:20px; text-align:center; color:#ef4444;">❌ 加载失败: ${error.message}</td></tr>`;
+      }
+    }
+    
+    async function loadTEngineClaims() {
+      try {
+        const tbody = $('tEngineClaimsTableBody');
+        tbody.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center; color:#6b7280;">🔄 加载中...</td></tr>';
+        
+        const res = await fetch('/api/pool-flows?type=tengine-claims&limit=50');
+        const json = await res.json();
+        
+        if (!json.success) {
+          throw new Error(json.error || '加载失败');
+        }
+        
+        const data = json.data || [];
+        
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center; color:#6b7280;">暂无记录</td></tr>';
+          $('tEngineClaimsStats').textContent = '总计：0 笔';
+          return;
+        }
+        
+        let totalAmount = 0;
+        const rows = data.map(record => {
+          totalAmount += parseFloat(record.amount);
+          const date = new Date(record.timestamp * 1000);
+          const timeStr = date.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+          const explorerUrl = `https://berascan.com/tx/${record.txHash}`;
+          
+          return `
+            <tr style="border-bottom:1px solid #1f2937;">
+              <td style="padding:8px; color:#e5e7eb;">${timeStr}</td>
+              <td style="padding:8px; font-family:monospace; font-size:11px; color:#6ee7b7;">${record.to.slice(0,6)}...${record.to.slice(-4)}</td>
+              <td style="padding:8px; text-align:right; color:#10b981; font-weight:600;">${parseFloat(record.amount).toLocaleString()}</td>
+              <td style="padding:8px; text-align:center;"><a href="${explorerUrl}" target="_blank" style="color:#60a5fa; text-decoration:none;">🔗</a></td>
+            </tr>
+          `;
+        }).join('');
+        
+        tbody.innerHTML = rows;
+        $('tEngineClaimsStats').textContent = `总计：${data.length} 笔 | 总额：${totalAmount.toLocaleString()} DP`;
+      } catch (error) {
+        console.error('加载 T-Engine claims 失败:', error);
+        $('tEngineClaimsTableBody').innerHTML = `<tr><td colspan="4" style="padding:20px; text-align:center; color:#ef4444;">❌ 加载失败: ${error.message}</td></tr>`;
+      }
+    }
+    
+    // 绑定刷新按钮
+    $('btnRefreshNFTClaims').onclick = loadNFTClaims;
+    $('btnRefreshTEngineDeposits').onclick = loadTEngineDeposits;
+    $('btnRefreshTEngineClaims').onclick = loadTEngineClaims;
+    
     // Bind connect button
     $('connectBtn').onclick = connectWallet;
     
@@ -1371,6 +1594,18 @@
     console.table(CONTRACTS);
     console.log('💡 请点击 "连接钱包" 按钮开始使用');
     console.log('🔍 如果遇到问题，请查看详细的控制台日志');
+    
+    // 📊 自动加载矿池流水数据
+    console.log('📊 加载矿池流水数据...');
+    Promise.all([
+      loadNFTClaims(),
+      loadTEngineDeposits(),
+      loadTEngineClaims()
+    ]).then(() => {
+      console.log('✅ 矿池流水数据加载完成');
+    }).catch(err => {
+      console.warn('⚠️ 部分流水数据加载失败:', err);
+    });
   </script>
 </body>
 </html>
