@@ -63,9 +63,9 @@ async function getNFTPoolClaims(fromBlock = null, toBlock = 'latest', limit = 10
     const latestBlock = await provider.getBlockNumber();
     console.log('📍 当前区块:', latestBlock);
     
-    // 如果未指定起始区块，默认查询最近 8640 个区块（约20小时，Berachain 约2秒/区块）
+    // 如果未指定起始区块，默认查询最近 9900 个区块（约5.5小时，RPC限制 10000）
     if (!fromBlock) {
-      fromBlock = Math.max(0, latestBlock - 8640);
+      fromBlock = Math.max(0, latestBlock - 9900);
     }
     
     console.log('📊 查询区块范围:', fromBlock, 'to', toBlock, `(共 ${latestBlock - fromBlock} 个区块)`);
@@ -147,9 +147,9 @@ async function getTEngineDeposits(fromBlock = null, toBlock = 'latest', limit = 
     const latestBlock = await provider.getBlockNumber();
     console.log('📍 当前区块:', latestBlock);
     
-    // 如果未指定起始区块，默认查询最近 8640 个区块（约20小时）
+    // 如果未指定起始区块，默认查询最近 9900 个区块（约5.5小时）
     if (!fromBlock) {
-      fromBlock = Math.max(0, latestBlock - 8640);
+      fromBlock = Math.max(0, latestBlock - 9900);
     }
     
     console.log('📊 查询区块范围:', fromBlock, 'to', toBlock, `(共 ${latestBlock - fromBlock} 个区块)`);
@@ -230,9 +230,9 @@ async function getTEngineClaims(fromBlock = null, toBlock = 'latest', limit = 10
     const latestBlock = await provider.getBlockNumber();
     console.log('📍 当前区块:', latestBlock);
     
-    // 如果未指定起始区块，默认查询最近 8640 个区块（约20小时）
+    // 如果未指定起始区块，默认查询最近 9900 个区块（约5.5小时）
     if (!fromBlock) {
-      fromBlock = Math.max(0, latestBlock - 8640);
+      fromBlock = Math.max(0, latestBlock - 9900);
     }
     
     console.log('📊 查询区块范围:', fromBlock, 'to', toBlock, `(共 ${latestBlock - fromBlock} 个区块)`);
